@@ -30,8 +30,16 @@ const Dashboard = () => {
   }, [user]);
 
   const handleLogout = async () => {
-    await logoutUser();
-    navigate("/login");
+    try {
+      await logoutUser();
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
+  const handleCreatePortfolio = () => {
+    navigate("/create");
   };
 
   if (loading) {
@@ -40,21 +48,45 @@ const Dashboard = () => {
 
   return (
     <div>
-      <h1>Dashboard</h1>
 
-      <h2>Welcome, {profile?.name} 👋</h2>
+      <header>
+        <h1>Portfolio Creator</h1>
 
-      <p>{profile?.email}</p>
+        <button onClick={handleLogout}>
+          Logout
+        </button>
+      </header>
 
-      <button>
-        Create Portfolio
-      </button>
+      <main>
 
-      <br />
+        <section>
+          <h2>
+            Welcome, {profile?.name || "User"} 👋
+          </h2>
 
-      <button onClick={handleLogout}>
-        Logout
-      </button>
+          <p>
+            Create and share your professional portfolio.
+          </p>
+        </section>
+
+        <section>
+          <h2>Your Portfolio</h2>
+
+          <div>
+            <h3>Create your portfolio</h3>
+
+            <p>
+              Build a professional portfolio and publish it online.
+            </p>
+
+            <button onClick={handleCreatePortfolio}>
+              + Create Portfolio
+            </button>
+          </div>
+        </section>
+
+      </main>
+
     </div>
   );
 };
