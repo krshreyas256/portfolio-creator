@@ -4,6 +4,9 @@ import {
   setDoc,
   getDoc,
   serverTimestamp,
+  collection,
+  addDoc,
+  updateDoc,
 } from "firebase/firestore";
 
 import app from "./config";
@@ -30,6 +33,78 @@ export const getUserProfile = async (uid) => {
   }
 
   return null;
+};
+
+export const createPortfolio = async (userId) => {
+  const portfolioRef = await addDoc(collection(db, "portfolios"), {
+    userId,
+
+    slug: "",
+
+    published: false,
+
+    template: "modern",
+
+    personal: {
+      name: "",
+      title: "",
+      profileImage: "",
+      location: "",
+    },
+
+    about: "",
+
+    skills: [],
+
+    education: [],
+
+    experience: [],
+
+    projects: [],
+
+    certifications: [],
+
+    socialLinks: {
+      github: "",
+      linkedin: "",
+      twitter: "",
+      instagram: "",
+    },
+
+    contact: {
+      email: "",
+      phone: "",
+    },
+
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+
+  return portfolioRef.id;
+};
+
+export const getPortfolio = async (portfolioId) => {
+  const portfolioRef = doc(db, "portfolios", portfolioId);
+
+  const portfolioSnapshot = await getDoc(portfolioRef);
+
+  if (portfolioSnapshot.exists()) {
+    return {
+      id: portfolioSnapshot.id,
+      ...portfolioSnapshot.data(),
+    };
+  }
+
+  return null;
+};
+
+export const updatePortfolio = async (portfolioId, data) => {
+  const portfolioRef = doc(db, "portfolios", portfolioId);
+
+  await updateDoc(portfolioRef, {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
 };
 
 export { db };

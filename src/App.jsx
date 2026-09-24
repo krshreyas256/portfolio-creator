@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import CreatePortfolio from "./pages/CreatePortfolio";
+import PortfolioBuilder from "./pages/PortfolioBuilder";
 
 function App() {
   return (
@@ -36,6 +37,15 @@ function App() {
           </ProtectedRoute>
           }
         />
+
+        <Route
+  path="/create/:portfolioId"
+  element={
+    <ProtectedRoute>
+      <PortfolioBuilder />
+    </ProtectedRoute>
+  }
+/>
 
       </Routes>
     </BrowserRouter>
