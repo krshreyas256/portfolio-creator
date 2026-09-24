@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { registerUser } from "../firebase/auth";
+import { createUserProfile } from "../firebase/firestore";
 
 const Signup = () => {
   const navigate = useNavigate();
 
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -18,7 +20,10 @@ const Signup = () => {
     setLoading(true);
 
     try {
-      await registerUser(email, password);
+      const result = await registerUser(email, password);
+
+      await createUserProfile(result.user, name);
+
       navigate("/dashboard");
     } catch (error) {
       setError(error.message);
@@ -32,6 +37,14 @@ const Signup = () => {
       <h1>Create Account</h1>
 
       <form onSubmit={handleSignup}>
+        <input
+          type="text"
+          placeholder="Full Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+
         <input
           type="email"
           placeholder="Email"
