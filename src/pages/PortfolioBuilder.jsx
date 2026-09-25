@@ -7,6 +7,8 @@ import {
 } from "../firebase/firestore";
 
 import PersonalInfo from "../components/builder/PersonalInfo";
+import AboutMe from "../components/builder/AboutMe";
+import Skills from "../components/builder/Skills";
 
 const PortfolioBuilder = () => {
   const { portfolioId } = useParams();
@@ -69,14 +71,22 @@ const PortfolioBuilder = () => {
       )}
 
       {step === 2 && (
-        <div>
-          <h2>About Me</h2>
+  <AboutMe
+    portfolio={portfolio}
+    onSave={handleSave}
+    onNext={() => setStep(3)}
+    onBack={() => setStep(1)}
+  />
+)}
 
-          <p>
-            We'll build this section next.
-          </p>
-        </div>
-      )}
+{step === 3 && (
+  <Skills
+    portfolio={portfolio}
+    onSave={handleSave}
+    onNext={() => setStep(4)}
+    onBack={() => setStep(2)}
+  />
+)}
     </div>
   );
 };
