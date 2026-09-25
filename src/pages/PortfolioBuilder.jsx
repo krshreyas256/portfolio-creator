@@ -9,6 +9,8 @@ import {
 import PersonalInfo from "../components/builder/PersonalInfo";
 import AboutMe from "../components/builder/AboutMe";
 import Skills from "../components/builder/Skills";
+import Education from "../components/builder/Education";
+import Experience from "../components/builder/Experience";
 
 const PortfolioBuilder = () => {
   const { portfolioId } = useParams();
@@ -59,7 +61,7 @@ const PortfolioBuilder = () => {
       <h1>Create Your Portfolio</h1>
 
       <p>
-        Step {step} of 7
+        Step {step} of 8
       </p>
 
       {step === 1 && (
@@ -85,6 +87,24 @@ const PortfolioBuilder = () => {
     onSave={handleSave}
     onNext={() => setStep(4)}
     onBack={() => setStep(2)}
+  />
+)}
+
+{step === 4 && (
+  <Education
+    portfolio={portfolio}
+    onSave={handleSave}
+    onNext={() => setStep(5)}
+    onBack={() => setStep(3)}
+  />
+)}
+
+{step === 5 && (
+  <Experience
+    portfolio={portfolio}
+    onSave={handleSave}
+    onNext={() => setStep(6)}
+    onBack={() => setStep(4)}
   />
 )}
     </div>
