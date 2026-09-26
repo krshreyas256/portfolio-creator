@@ -1,6 +1,10 @@
 import { useState } from "react";
 
-const SocialContact = ({ portfolio, onSave, onBack }) => {
+const SocialContact = ({
+  portfolio,
+  onSave,
+  onBack,
+}) => {
   const [socialLinks, setSocialLinks] = useState(
     portfolio.socialLinks || {
       github: "",
@@ -17,155 +21,290 @@ const SocialContact = ({ portfolio, onSave, onBack }) => {
     }
   );
 
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [saved, setSaved] = useState(false);
 
-  const handleSocialChange = (field, value) => {
+  const updateSocialLink = (field, value) => {
     setSocialLinks((previous) => ({
       ...previous,
       [field]: value,
     }));
 
-    setSaved(false);
+    setError("");
   };
 
-  const handleContactChange = (field, value) => {
+  const updateContact = (field, value) => {
     setContact((previous) => ({
       ...previous,
       [field]: value,
     }));
 
-    setSaved(false);
+    setError("");
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    try {
-      setError("");
-      setSaved(false);
+    setSaving(true);
+    setError("");
 
+    try {
       await onSave({
         socialLinks,
         contact,
       });
-
-      setSaved(true);
     } catch (error) {
-      console.error("Error saving social links and contact:", error);
-      setError("Unable to save your information. Please try again.");
+      console.error(
+        "Error saving social and contact information:",
+        error
+      );
+
+      setError(
+        "Unable to save your information. Please try again."
+      );
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
-    <div>
-      <h2>Social Links & Contact</h2>
+    <form onSubmit={handleSubmit}>
+
+      <h2>Social & Contact</h2>
 
       <p>
-        Add your social profiles and contact information so visitors
-        can connect with you.
+        Add ways for visitors to connect with you and
+        explore your professional profiles.
       </p>
 
-      {error && <p>{error}</p>}
+      {error && (
+        <div className="builder-error">
+          {error}
+        </div>
+      )}
 
-      {saved && <p>Information saved successfully.</p>}
 
-      <form onSubmit={handleSubmit}>
-        <h3>Social Links</h3>
+      {/* Contact Information */}
 
-        <div>
-          <label>GitHub</label>
+      <div className="builder-section-block">
 
-          <input
-            type="url"
-            value={socialLinks.github}
-            onChange={(event) =>
-              handleSocialChange("github", event.target.value)
-            }
-            placeholder="https://github.com/username"
-          />
+        <div className="builder-section-heading">
+          <div className="builder-section-icon">
+            ✉️
+          </div>
+
+          <div>
+            <h3>Contact Information</h3>
+
+            <p>
+              Let visitors know how they can reach you.
+            </p>
+          </div>
         </div>
 
-        <div>
-          <label>LinkedIn</label>
+
+        <div className="builder-field">
+
+          <label htmlFor="contact-email">
+            Email Address
+          </label>
 
           <input
-            type="url"
-            value={socialLinks.linkedin}
-            onChange={(event) =>
-              handleSocialChange("linkedin", event.target.value)
-            }
-            placeholder="https://linkedin.com/in/username"
-          />
-        </div>
-
-        <div>
-          <label>Twitter / X</label>
-
-          <input
-            type="url"
-            value={socialLinks.twitter}
-            onChange={(event) =>
-              handleSocialChange("twitter", event.target.value)
-            }
-            placeholder="https://x.com/username"
-          />
-        </div>
-
-        <div>
-          <label>Instagram</label>
-
-          <input
-            type="url"
-            value={socialLinks.instagram}
-            onChange={(event) =>
-              handleSocialChange("instagram", event.target.value)
-            }
-            placeholder="https://instagram.com/username"
-          />
-        </div>
-
-        <hr />
-
-        <h3>Contact Information</h3>
-
-        <div>
-          <label>Email</label>
-
-          <input
+            id="contact-email"
             type="email"
+            placeholder="e.g. hello@example.com"
             value={contact.email}
             onChange={(event) =>
-              handleContactChange("email", event.target.value)
+              updateContact(
+                "email",
+                event.target.value
+              )
             }
-            placeholder="you@example.com"
           />
+
         </div>
 
-        <div>
-          <label>Phone</label>
+
+        <div className="builder-field">
+
+          <label htmlFor="contact-phone">
+            Phone Number
+            <span className="builder-optional">
+              Optional
+            </span>
+          </label>
 
           <input
+            id="contact-phone"
             type="tel"
+            placeholder="e.g. +91 98765 43210"
             value={contact.phone}
             onChange={(event) =>
-              handleContactChange("phone", event.target.value)
+              updateContact(
+                "phone",
+                event.target.value
+              )
             }
-            placeholder="+91 9876543210"
           />
+
         </div>
 
-        <div>
-          <button type="button" onClick={onBack}>
-            Back
-          </button>
+      </div>
 
-          <button type="submit">
-            Save Portfolio
-          </button>
+
+      {/* Social Links */}
+
+      <div className="builder-section-block">
+
+        <div className="builder-section-heading">
+          <div className="builder-section-icon">
+            🔗
+          </div>
+
+          <div>
+            <h3>Social Profiles</h3>
+
+            <p>
+              Add links to your professional and social
+              profiles.
+            </p>
+          </div>
         </div>
-      </form>
-    </div>
+
+
+        {/* GitHub */}
+
+        <div className="builder-field">
+
+          <label htmlFor="github">
+            GitHub
+            <span className="builder-optional">
+              Optional
+            </span>
+          </label>
+
+          <input
+            id="github"
+            type="url"
+            placeholder="https://github.com/username"
+            value={socialLinks.github}
+            onChange={(event) =>
+              updateSocialLink(
+                "github",
+                event.target.value
+              )
+            }
+          />
+
+        </div>
+
+
+        {/* LinkedIn */}
+
+        <div className="builder-field">
+
+          <label htmlFor="linkedin">
+            LinkedIn
+            <span className="builder-optional">
+              Optional
+            </span>
+          </label>
+
+          <input
+            id="linkedin"
+            type="url"
+            placeholder="https://linkedin.com/in/username"
+            value={socialLinks.linkedin}
+            onChange={(event) =>
+              updateSocialLink(
+                "linkedin",
+                event.target.value
+              )
+            }
+          />
+
+        </div>
+
+
+        {/* Twitter */}
+
+        <div className="builder-field">
+
+          <label htmlFor="twitter">
+            X / Twitter
+            <span className="builder-optional">
+              Optional
+            </span>
+          </label>
+
+          <input
+            id="twitter"
+            type="url"
+            placeholder="https://x.com/username"
+            value={socialLinks.twitter}
+            onChange={(event) =>
+              updateSocialLink(
+                "twitter",
+                event.target.value
+              )
+            }
+          />
+
+        </div>
+
+
+        {/* Instagram */}
+
+        <div className="builder-field">
+
+          <label htmlFor="instagram">
+            Instagram
+            <span className="builder-optional">
+              Optional
+            </span>
+          </label>
+
+          <input
+            id="instagram"
+            type="url"
+            placeholder="https://instagram.com/username"
+            value={socialLinks.instagram}
+            onChange={(event) =>
+              updateSocialLink(
+                "instagram",
+                event.target.value
+              )
+            }
+          />
+
+        </div>
+
+      </div>
+
+
+      {/* Navigation */}
+
+      <div className="builder-navigation">
+
+        <button
+          type="button"
+          onClick={onBack}
+        >
+          ← Back
+        </button>
+
+        <button
+          type="submit"
+          disabled={saving}
+        >
+          {saving
+            ? "Saving..."
+            : "Save Portfolio"}
+        </button>
+
+      </div>
+
+    </form>
   );
 };
 
