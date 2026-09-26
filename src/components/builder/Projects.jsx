@@ -1,40 +1,70 @@
 import { useState } from "react";
 import { uploadImage } from "../../cloudinary/uploadImage";
 
-const Projects = ({ portfolio, onSave, onNext, onBack }) => {
+const emptyProject = {
+  name: "",
+  description: "",
+  technologies: [],
+  githubUrl: "",
+  liveUrl: "",
+  imageUrl: "",
+};
+
+const Projects = ({
+  portfolio,
+  onSave,
+  onNext,
+  onBack,
+}) => {
   const [projects, setProjects] = useState(
-    portfolio.projects || [
-      {
-        name: "",
-        description: "",
-        technologies: [],
-        githubUrl: "",
-        liveUrl: "",
-        imageUrl: "",
-      },
-    ]
+    portfolio.projects || []
   );
 
+  const [saving, setSaving] = useState(false);
   const [uploadingIndex, setUploadingIndex] = useState(null);
   const [error, setError] = useState("");
 
-  const handleChange = (index, field, value) => {
-    const updatedProjects = [...projects];
-
-    updatedProjects[index][field] = value;
-
-    setProjects(updatedProjects);
+  const addProject = () => {
+    setProjects((previous) => [
+      ...previous,
+      { ...emptyProject },
+    ]);
   };
 
-  const handleTechnologiesChange = (index, value) => {
-    const updatedProjects = [...projects];
+  const updateProject = (index, field, value) => {
+    setProjects((previous) => {
+      const updated = [...previous];
 
-    updatedProjects[index].technologies = value
+      updated[index] = {
+        ...updated[index],
+        [field]: value,
+      };
+
+      return updated;
+    });
+
+    setError("");
+  };
+
+  const removeProject = (index) => {
+    setProjects((previous) =>
+      previous.filter(
+        (_, projectIndex) => projectIndex !== index
+      )
+    );
+  };
+
+  const handleTechnologyChange = (index, value) => {
+    const technologies = value
       .split(",")
-      .map((tech) => tech.trim())
+      .map((technology) => technology.trim())
       .filter(Boolean);
 
-    setProjects(updatedProjects);
+    updateProject(
+      index,
+      "technologies",
+      technologies
+    );
   };
 
   const handleImageUpload = async (index, file) => {
@@ -46,192 +76,378 @@ const Projects = ({ portfolio, onSave, onNext, onBack }) => {
     try {
       const imageUrl = await uploadImage(file);
 
-      const updatedProjects = [...projects];
-
-      updatedProjects[index].imageUrl = imageUrl;
-
-      setProjects(updatedProjects);
+      updateProject(
+        index,
+        "imageUrl",
+        imageUrl
+      );
     } catch (error) {
-      console.error("Image upload error:", error);
-      setError("Unable to upload image. Please try again.");
+      console.error(
+        "Project image upload error:",
+        error
+      );
+
+      setError(
+        "Unable to upload project image. Please try again."
+      );
     } finally {
       setUploadingIndex(null);
     }
   };
 
-  const addProject = () => {
-    setProjects([
-      ...projects,
-      {
-        name: "",
-        description: "",
-        technologies: [],
-        githubUrl: "",
-        liveUrl: "",
-        imageUrl: "",
-      },
-    ]);
-  };
-
-  const removeProject = (index) => {
-    const updatedProjects = projects.filter(
-      (_, projectIndex) => projectIndex !== index
-    );
-
-    setProjects(updatedProjects);
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    try {
-      setError("");
+    setSaving(true);
+    setError("");
 
+    try {
       await onSave({
         projects,
       });
 
       onNext();
     } catch (error) {
-      console.error("Error saving projects:", error);
-      setError("Unable to save projects. Please try again.");
+      console.error(
+        "Error saving projects:",
+        error
+      );
+
+      setError(
+        "Unable to save your projects. Please try again."
+      );
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
-    <div>
+    <form onSubmit={handleSubmit}>
+
       <h2>Projects</h2>
 
       <p>
-        Showcase your important projects and give visitors a better
-        understanding of your work.
+        Showcase the projects that best demonstrate your
+        skills, experience, and achievements.
       </p>
 
-      {error && <p>{error}</p>}
 
-      <form onSubmit={handleSubmit}>
-        {projects.map((project, index) => (
-          <div key={index}>
-            <h3>Project {index + 1}</h3>
+      {/* Error */}
 
-            <div>
-              <label>Project Name</label>
-              <input
-                type="text"
-                value={project.name}
-                onChange={(event) =>
-                  handleChange(index, "name", event.target.value)
-                }
-                placeholder="e.g. Resume Analyzer"
-                required
-              />
-            </div>
+      {error && (
+        <div className="builder-error">
+          {error}
+        </div>
+      )}
 
-            <div>
-              <label>Description</label>
-              <textarea
-                value={project.description}
-                onChange={(event) =>
-                  handleChange(index, "description", event.target.value)
-                }
-                placeholder="Describe your project..."
-                rows="4"
-                required
-              />
-            </div>
 
-            <div>
-              <label>Technologies</label>
-              <input
-                type="text"
-                value={project.technologies.join(", ")}
-                onChange={(event) =>
-                  handleTechnologiesChange(index, event.target.value)
-                }
-                placeholder="React, Node.js, MongoDB"
-              />
+      {/* Empty state */}
 
-              <small>Separate technologies with commas.</small>
-            </div>
+      {projects.length === 0 ? (
 
-            <div>
-              <label>GitHub URL</label>
-              <input
-                type="url"
-                value={project.githubUrl}
-                onChange={(event) =>
-                  handleChange(index, "githubUrl", event.target.value)
-                }
-                placeholder="https://github.com/..."
-              />
-            </div>
+        <div className="builder-empty-section">
 
-            <div>
-              <label>Live Project URL</label>
-              <input
-                type="url"
-                value={project.liveUrl}
-                onChange={(event) =>
-                  handleChange(index, "liveUrl", event.target.value)
-                }
-                placeholder="https://..."
-              />
-            </div>
-
-            <div>
-              <label>Project Image</label>
-
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(event) =>
-                  handleImageUpload(index, event.target.files[0])
-                }
-              />
-
-              {uploadingIndex === index && (
-                <p>Uploading image...</p>
-              )}
-
-              {project.imageUrl && (
-                <div>
-                  <img
-                    src={project.imageUrl}
-                    alt={project.name || "Project preview"}
-                    width="250"
-                  />
-                </div>
-              )}
-            </div>
-
-            {projects.length > 1 && (
-              <button
-                type="button"
-                onClick={() => removeProject(index)}
-              >
-                Remove Project
-              </button>
-            )}
-
-            <hr />
+          <div className="builder-empty-icon">
+            🚀
           </div>
-        ))}
 
-        <button type="button" onClick={addProject}>
+          <h3>No projects added yet</h3>
+
+          <p>
+            Add projects that you want visitors to see
+            on your portfolio.
+          </p>
+
+          <button
+            type="button"
+            onClick={addProject}
+          >
+            + Add Project
+          </button>
+
+        </div>
+
+      ) : (
+
+        <div className="builder-repeat-list">
+
+          {projects.map((project, index) => (
+
+            <div
+              className="builder-repeat-card"
+              key={index}
+            >
+
+              {/* Header */}
+
+              <div className="builder-repeat-header">
+
+                <div>
+
+                  <h3>
+                    Project {index + 1}
+                  </h3>
+
+                  <span>
+                    Portfolio project
+                  </span>
+
+                </div>
+
+                <button
+                  type="button"
+                  className="builder-remove-button"
+                  onClick={() =>
+                    removeProject(index)
+                  }
+                >
+                  Remove
+                </button>
+
+              </div>
+
+
+              {/* Project name */}
+
+              <div className="builder-field">
+
+                <label
+                  htmlFor={`project-name-${index}`}
+                >
+                  Project Name
+                </label>
+
+                <input
+                  id={`project-name-${index}`}
+                  type="text"
+                  placeholder="e.g. Portfolio Creator"
+                  value={project.name}
+                  onChange={(event) =>
+                    updateProject(
+                      index,
+                      "name",
+                      event.target.value
+                    )
+                  }
+                  required
+                />
+
+              </div>
+
+
+              {/* Description */}
+
+              <div className="builder-field">
+
+                <label
+                  htmlFor={`project-description-${index}`}
+                >
+                  Description
+                </label>
+
+                <textarea
+                  id={`project-description-${index}`}
+                  placeholder="Describe what the project does, the problem it solves, and your contribution."
+                  value={project.description}
+                  onChange={(event) =>
+                    updateProject(
+                      index,
+                      "description",
+                      event.target.value
+                    )
+                  }
+                  required
+                />
+
+              </div>
+
+
+              {/* Technologies */}
+
+              <div className="builder-field">
+
+                <label
+                  htmlFor={`project-technologies-${index}`}
+                >
+                  Technologies
+                </label>
+
+                <input
+                  id={`project-technologies-${index}`}
+                  type="text"
+                  placeholder="React, Firebase, JavaScript"
+                  value={project.technologies.join(", ")}
+                  onChange={(event) =>
+                    handleTechnologyChange(
+                      index,
+                      event.target.value
+                    )
+                  }
+                />
+
+                <small className="builder-field-help">
+                  Separate technologies with commas.
+                </small>
+
+              </div>
+
+
+              {/* Links */}
+
+              <div className="builder-field-grid">
+
+                <div className="builder-field">
+
+                  <label
+                    htmlFor={`github-url-${index}`}
+                  >
+                    GitHub URL
+                    <span className="builder-optional">
+                      Optional
+                    </span>
+                  </label>
+
+                  <input
+                    id={`github-url-${index}`}
+                    type="url"
+                    placeholder="https://github.com/..."
+                    value={project.githubUrl}
+                    onChange={(event) =>
+                      updateProject(
+                        index,
+                        "githubUrl",
+                        event.target.value
+                      )
+                    }
+                  />
+
+                </div>
+
+
+                <div className="builder-field">
+
+                  <label
+                    htmlFor={`live-url-${index}`}
+                  >
+                    Live Demo URL
+                    <span className="builder-optional">
+                      Optional
+                    </span>
+                  </label>
+
+                  <input
+                    id={`live-url-${index}`}
+                    type="url"
+                    placeholder="https://..."
+                    value={project.liveUrl}
+                    onChange={(event) =>
+                      updateProject(
+                        index,
+                        "liveUrl",
+                        event.target.value
+                      )
+                    }
+                  />
+
+                </div>
+
+              </div>
+
+
+              {/* Project image */}
+
+              <div className="builder-field">
+
+                <label
+                  htmlFor={`project-image-${index}`}
+                >
+                  Project Image
+                  <span className="builder-optional">
+                    Optional
+                  </span>
+                </label>
+
+                <input
+                  id={`project-image-${index}`}
+                  type="file"
+                  accept="image/*"
+                  disabled={
+                    uploadingIndex === index
+                  }
+                  onChange={(event) =>
+                    handleImageUpload(
+                      index,
+                      event.target.files[0]
+                    )
+                  }
+                />
+
+                {uploadingIndex === index && (
+                  <p className="builder-upload-status">
+                    Uploading image...
+                  </p>
+                )}
+
+                {project.imageUrl && (
+                  <div className="builder-project-image-preview">
+
+                    <img
+                      src={project.imageUrl}
+                      alt={`${project.name || "Project"} preview`}
+                    />
+
+                  </div>
+                )}
+
+              </div>
+
+            </div>
+
+          ))}
+
+        </div>
+
+      )}
+
+
+      {/* Add another */}
+
+      {projects.length > 0 && (
+        <button
+          type="button"
+          className="builder-add-button"
+          onClick={addProject}
+        >
           + Add Another Project
         </button>
+      )}
 
-        <div>
-          <button type="button" onClick={onBack}>
-            Back
-          </button>
 
-          <button type="submit">
-            Save & Continue
-          </button>
-        </div>
-      </form>
-    </div>
+      {/* Navigation */}
+
+      <div className="builder-navigation">
+
+        <button
+          type="button"
+          onClick={onBack}
+        >
+          ← Back
+        </button>
+
+        <button
+          type="submit"
+          disabled={
+            saving || uploadingIndex !== null
+          }
+        >
+          {saving
+            ? "Saving..."
+            : "Save & Continue →"}
+        </button>
+
+      </div>
+
+    </form>
   );
 };
 

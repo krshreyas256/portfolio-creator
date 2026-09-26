@@ -702,3 +702,57 @@
 .builder-checkbox span {
   line-height: 1.4;
 }
+
+/* ========================================
+   Builder Field Help
+======================================== */
+
+.builder-field-help {
+  display: block;
+
+  margin-top: 6px;
+
+  color: #9ca3af;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+
+/* ========================================
+   Upload Status
+======================================== */
+
+.builder-upload-status {
+  margin: 8px 0 0 !important;
+
+  color: #6b7280 !important;
+  font-size: 12px !important;
+}
+
+
+/* ========================================
+   Project Image Preview
+======================================== */
+
+.builder-project-image-preview {
+  margin-top: 14px;
+
+  width: 100%;
+  max-width: 360px;
+
+  overflow: hidden;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+
+  background: #f9fafb;
+}
+
+.builder-project-image-preview img {
+  display: block;
+
+  width: 100%;
+  height: 190px;
+
+  object-fit: cover;
+}
