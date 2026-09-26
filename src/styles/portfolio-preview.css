@@ -808,3 +808,130 @@
     width: 100%;
   }
 }
+
+.preview-navigation {
+  width: min(1120px, 90%);
+  margin: 0 auto;
+  padding: 18px 0;
+}
+
+.preview-back-button {
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #374151;
+
+  padding: 9px 15px;
+  border-radius: 7px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.preview-back-button:hover {
+  background: #f3f4f6;
+}
+
+/* ================= PREVIEW ACTION BAR ================= */
+
+.preview-navigation-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.preview-live-button,
+.preview-publish-button {
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #374151;
+  padding: 9px 15px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.preview-live-button:hover {
+  background: #f3f4f6;
+}
+
+.preview-publish-button {
+  border-color: #111827;
+  background: #111827;
+  color: #ffffff;
+}
+
+.preview-publish-button:hover {
+  background: #000000;
+}
+
+.preview-publish-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.preview-published-url {
+  width: min(1120px, 90%);
+  margin: 0 auto;
+  padding: 0 0 15px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.preview-published-url a {
+  color: #111827;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.preview-error {
+  width: min(1120px, 90%);
+  margin: 0 auto 15px;
+  padding: 10px 12px;
+
+  border: 1px solid #fecaca;
+  border-radius: 7px;
+
+  background: #fef2f2;
+  color: #b91c1c;
+
+  font-size: 13px;
+}
+
+@media (max-width: 600px) {
+  .preview-navigation-inner {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .preview-actions {
+    width: 100%;
+  }
+
+  .preview-live-button,
+  .preview-publish-button {
+    flex: 1;
+  }
+
+  .preview-published-url {
+    width: 92%;
+    font-size: 12px;
+  }
+}

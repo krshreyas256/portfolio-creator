@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import {
   getPortfolio,
-  publishPortfolio,
   isSlugAvailable,
+  publishPortfolio,
+  updatePortfolio,
 } from "../firebase/firestore";
 
 import { generateSlug } from "../utils/slug";
@@ -14,194 +15,280 @@ import "../styles/portfolio-preview.css";
 const PortfolioPreview = () => {
   const { portfolioId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [portfolio, setPortfolio] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const [publishing, setPublishing] = useState(false);
-  const [publishError, setPublishError] = useState("");
+  const [publishedUrl, setPublishedUrl] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const loadPortfolio = async () => {
       try {
         const data = await getPortfolio(portfolioId);
 
+        if (!data) {
+          navigate("/dashboard");
+          return;
+        }
+
         setPortfolio(data);
-      } catch (error) {
-        console.error("Error loading portfolio:", error);
+
+        /*
+         * If the portfolio is already published,
+         * always use the existing slug to build the URL.
+         */
+        if (data.published && data.slug) {
+          setPublishedUrl(
+            `${window.location.origin}/p/${data.slug}`
+          );
+        }
+      } catch (err) {
+        console.error("Error loading portfolio:", err);
+        setError("Unable to load portfolio.");
       } finally {
         setLoading(false);
       }
     };
 
     loadPortfolio();
-  }, [portfolioId]);
+  }, [portfolioId, navigate]);
 
-  // ==========================================
-  // PUBLISH PORTFOLIO
-  // ==========================================
+  /*
+   * ==========================================
+   * BACK NAVIGATION
+   * ==========================================
+   *
+   * If Preview was opened from the Builder,
+   * return to the exact Builder step.
+   *
+   * If Preview was opened from Dashboard,
+   * return to Dashboard.
+   */
+
+  const handleBack = () => {
+    if (location.state?.from === "builder") {
+      navigate(`/create/${portfolioId}`, {
+        state: {
+          step: location.state.step || 1,
+        },
+      });
+
+      return;
+    }
+
+    navigate("/dashboard");
+  };
+
+  /*
+   * ==========================================
+   * PUBLISH / PUBLISH CHANGES
+   * ==========================================
+   *
+   * First-time publishing:
+   * - Generate slug
+   * - Check availability
+   * - Publish portfolio
+   * - Create permanent URL
+   *
+   * Already published:
+   * - NEVER generate a new slug
+   * - NEVER change the URL
+   * - Update the saved portfolio content only
+   */
 
   const handlePublish = async () => {
-  if (!portfolio?.personal?.name) {
-    setPublishError("Please add your name before publishing.");
-    return;
-  }
+    if (!portfolio) return;
 
-  setPublishing(true);
-  setPublishError("");
+    setError("");
 
-  try {
-    let slug = generateSlug(portfolio.personal.name);
+    try {
+      setPublishing(true);
 
-    if (!slug) {
-      throw new Error("Unable to generate a portfolio URL.");
+      /*
+       * ==========================================
+       * ALREADY PUBLISHED
+       * ==========================================
+       *
+       * Keep the existing slug permanently.
+       * Only update portfolio content.
+       */
+      if (portfolio.published && portfolio.slug) {
+        await updatePortfolio(portfolioId, {
+          personal: portfolio.personal,
+          about: portfolio.about,
+          skills: portfolio.skills,
+          education: portfolio.education,
+          experience: portfolio.experience,
+          projects: portfolio.projects,
+          certifications: portfolio.certifications,
+          socialLinks: portfolio.socialLinks,
+          contact: portfolio.contact,
+          template: portfolio.template,
+        });
+
+        /*
+         * Rebuild the URL using the existing slug.
+         * The slug is never regenerated here.
+         */
+        setPublishedUrl(
+          `${window.location.origin}/p/${portfolio.slug}`
+        );
+
+        return;
+      }
+
+      /*
+       * ==========================================
+       * FIRST-TIME PUBLISH
+       * ==========================================
+       *
+       * Generate the slug only once.
+       */
+      let slug = generateSlug(portfolio.personal?.name);
+
+      if (!slug) {
+        throw new Error(
+          "Please add your name in Personal Information before publishing."
+        );
+      }
+
+      /*
+       * Check whether the generated slug is already
+       * being used by another published portfolio.
+       */
+      const available = await isSlugAvailable(slug);
+
+      /*
+       * If the slug is already taken, create a unique
+       * slug using the portfolio ID.
+       */
+      if (!available) {
+        slug = `${slug}-${portfolioId.slice(0, 6)}`;
+      }
+
+      /*
+       * Publish the portfolio for the first time.
+       */
+      await publishPortfolio(portfolioId, slug);
+
+      /*
+       * Update local state so the UI immediately
+       * switches from "Publish Portfolio" to
+       * "Publish Changes".
+       */
+      setPortfolio((prev) => ({
+        ...prev,
+        slug,
+        published: true,
+      }));
+
+      const url = `${window.location.origin}/p/${slug}`;
+
+      setPublishedUrl(url);
+    } catch (err) {
+      console.error("Publishing error:", err);
+
+      setError(
+        err.message || "Something went wrong while publishing."
+      );
+    } finally {
+      setPublishing(false);
     }
+  };
 
-
-    // Test slug availability
-    const available = await isSlugAvailable(slug);
-
-
-    if (!available) {
-      slug = `${slug}-${portfolioId.slice(0, 6)}`;
-    }
-
-
-    // Publish portfolio
-    await publishPortfolio(portfolioId, slug);
-
-
-    setPortfolio((previous) => ({
-      ...previous,
-      slug,
-      published: true,
-    }));
-
-  } catch (error) {
-    console.error("PUBLISH ERROR:", error);
-    console.error("ERROR CODE:", error.code);
-    console.error("ERROR MESSAGE:", error.message);
-
-    setPublishError(
-      `Publish failed: ${error.code || error.message}`
-    );
-  } finally {
-    setPublishing(false);
-  }
-};
-
-  // ==========================================
-  // LOADING
-  // ==========================================
+  /*
+   * ==========================================
+   * LOADING
+   * ==========================================
+   */
 
   if (loading) {
     return (
       <div className="preview-loading">
-        <p>Loading portfolio...</p>
+        <p>Loading preview...</p>
       </div>
     );
   }
 
-  // ==========================================
-  // NOT FOUND
-  // ==========================================
-
   if (!portfolio) {
-    return (
-      <div className="preview-loading">
-        <p>Portfolio not found.</p>
-      </div>
-    );
+    return null;
   }
 
   const personal = portfolio.personal || {};
-
   const socialLinks = portfolio.socialLinks || {};
-
   const contact = portfolio.contact || {};
 
   return (
     <div className="portfolio-preview">
 
-      {/* ======================================
-          PUBLISH BAR
-      ====================================== */}
+      {/* ==========================================
+          PREVIEW TOP BAR
+          ========================================== */}
 
-      {!portfolio.published && (
-        <div className="publish-bar">
-          <div className="portfolio-container publish-bar-content">
+      <div className="preview-navigation">
+        <div className="portfolio-container preview-navigation-inner">
 
-            <div>
-              <strong>Your portfolio is ready!</strong>
+          <button
+            type="button"
+            className="preview-back-button"
+            onClick={handleBack}
+          >
+            ← Back
+          </button>
 
-              <p>
-                Publish it to make it available online.
-              </p>
-            </div>
+          <div className="preview-actions">
 
             <button
               type="button"
+              className="preview-publish-button"
               onClick={handlePublish}
               disabled={publishing}
-              className="publish-button"
             >
               {publishing
                 ? "Publishing..."
+                : portfolio.published
+                ? "Publish Changes"
                 : "Publish Portfolio"}
             </button>
 
           </div>
 
-          {publishError && (
-            <p className="publish-error">
-              {publishError}
-            </p>
-          )}
         </div>
-      )}
 
-      {/* ======================================
-          PUBLISHED STATUS
-      ====================================== */}
+        {/* Published URL */}
 
-      {portfolio.published && portfolio.slug && (
-        <div className="published-bar">
+        {publishedUrl && (
+          <div className="preview-published-url">
 
-          <div className="portfolio-container">
+            <span>Your portfolio is live:</span>
 
-            <strong>
-              Your portfolio is published!
-            </strong>
-
-            <p>
-              Your public URL:
-            </p>
-
-            <div className="published-url">
-
-              <span>
-                {window.location.origin}/p/{portfolio.slug}
-              </span>
-
-              <button
-                type="button"
-                onClick={() =>
-                  navigate(`/p/${portfolio.slug}`)
-                }
-              >
-                View Portfolio
-              </button>
-
-            </div>
+            <a
+              href={publishedUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {publishedUrl}
+            </a>
 
           </div>
+        )}
 
-        </div>
-      )}
+        {/* Error */}
 
-      {/* ======================================
+        {error && (
+          <div className="preview-error">
+            {error}
+          </div>
+        )}
+
+      </div>
+
+      {/* ==========================================
           HEADER
-      ====================================== */}
+          ========================================== */}
 
       <header className="portfolio-header">
 
@@ -211,34 +298,40 @@ const PortfolioPreview = () => {
             href="#home"
             className="portfolio-logo"
           >
-            {personal.name || "My Portfolio"}
+            {personal.name || "Portfolio"}
           </a>
 
           <nav className="portfolio-nav">
 
-            <a href="#about">
-              About
-            </a>
+            {personal.about || portfolio.about ? (
+              <a href="#about">About</a>
+            ) : null}
 
-            <a href="#skills">
-              Skills
-            </a>
+            {portfolio.skills?.length > 0 && (
+              <a href="#skills">Skills</a>
+            )}
 
-            <a href="#experience">
-              Experience
-            </a>
+            {portfolio.experience?.length > 0 && (
+              <a href="#experience">Experience</a>
+            )}
 
-            <a href="#projects">
-              Projects
-            </a>
+            {portfolio.projects?.length > 0 && (
+              <a href="#projects">Projects</a>
+            )}
 
-            <a href="#education">
-              Education
-            </a>
+            {portfolio.education?.length > 0 && (
+              <a href="#education">Education</a>
+            )}
 
-            <a href="#contact">
-              Contact
-            </a>
+            {portfolio.certifications?.length > 0 && (
+              <a href="#certifications">
+                Certificates
+              </a>
+            )}
+
+            {(contact.email || contact.phone) && (
+              <a href="#contact">Contact</a>
+            )}
 
           </nav>
 
@@ -246,9 +339,9 @@ const PortfolioPreview = () => {
 
       </header>
 
-      {/* ======================================
+      {/* ==========================================
           HERO
-      ====================================== */}
+          ========================================== */}
 
       <section
         id="home"
@@ -260,7 +353,7 @@ const PortfolioPreview = () => {
           <div className="hero-text">
 
             <p className="hero-greeting">
-              Hello, I'm
+              Welcome to my portfolio
             </p>
 
             <h1>
@@ -268,8 +361,7 @@ const PortfolioPreview = () => {
             </h1>
 
             <h2>
-              {personal.title ||
-                "Your Professional Title"}
+              {personal.title || "Your Professional Title"}
             </h2>
 
             {personal.location && (
@@ -280,19 +372,36 @@ const PortfolioPreview = () => {
 
             <div className="hero-actions">
 
-              <a
-                href="#projects"
-                className="primary-button"
-              >
-                View Projects
-              </a>
+              {contact.email && (
+                <a
+                  href={`mailto:${contact.email}`}
+                  className="primary-button"
+                >
+                  Contact Me
+                </a>
+              )}
 
-              <a
-                href="#contact"
-                className="secondary-button"
-              >
-                Contact Me
-              </a>
+              {socialLinks.linkedin && (
+                <a
+                  href={socialLinks.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="secondary-button"
+                >
+                  LinkedIn
+                </a>
+              )}
+
+              {socialLinks.github && (
+                <a
+                  href={socialLinks.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="secondary-button"
+                >
+                  GitHub
+                </a>
+              )}
 
             </div>
 
@@ -303,23 +412,16 @@ const PortfolioPreview = () => {
 
               <img
                 src={personal.profileImage}
-                alt={
-                  personal.name ||
-                  "Profile"
-                }
+                alt={personal.name || "Profile"}
                 className="hero-image"
               />
 
             </div>
           ) : (
             <div className="hero-image-placeholder">
-
-              <span>
-                {(personal.name || "Y")
-                  .charAt(0)
-                  .toUpperCase()}
-              </span>
-
+              {(personal.name || "Y")
+                .charAt(0)
+                .toUpperCase()}
             </div>
           )}
 
@@ -327,9 +429,9 @@ const PortfolioPreview = () => {
 
       </section>
 
-      {/* ======================================
+      {/* ==========================================
           ABOUT
-      ====================================== */}
+          ========================================== */}
 
       {portfolio.about && (
         <section
@@ -340,21 +442,12 @@ const PortfolioPreview = () => {
           <div className="portfolio-container">
 
             <div className="section-heading">
-
               <span>01</span>
-
-              <h2>
-                About Me
-              </h2>
-
+              <h2>About Me</h2>
             </div>
 
             <div className="about-content">
-
-              <p>
-                {portfolio.about}
-              </p>
-
+              <p>{portfolio.about}</p>
             </div>
 
           </div>
@@ -362,9 +455,9 @@ const PortfolioPreview = () => {
         </section>
       )}
 
-      {/* ======================================
+      {/* ==========================================
           SKILLS
-      ====================================== */}
+          ========================================== */}
 
       {portfolio.skills?.length > 0 && (
         <section
@@ -375,29 +468,22 @@ const PortfolioPreview = () => {
           <div className="portfolio-container">
 
             <div className="section-heading">
-
               <span>02</span>
-
-              <h2>
-                Skills
-              </h2>
-
+              <h2>Skills</h2>
             </div>
 
             <div className="skills-grid">
 
-              {portfolio.skills.map(
-                (skill, index) => (
-                  <div
-                    className="skill-card"
-                    key={index}
-                  >
-                    <span>
-                      {skill}
-                    </span>
-                  </div>
-                )
-              )}
+              {portfolio.skills.map((skill, index) => (
+                <div
+                  key={index}
+                  className="skill-card"
+                >
+                  {typeof skill === "string"
+                    ? skill
+                    : skill.name}
+                </div>
+              ))}
 
             </div>
 
@@ -406,9 +492,9 @@ const PortfolioPreview = () => {
         </section>
       )}
 
-      {/* ======================================
+      {/* ==========================================
           EXPERIENCE
-      ====================================== */}
+          ========================================== */}
 
       {portfolio.experience?.length > 0 && (
         <section
@@ -419,25 +505,20 @@ const PortfolioPreview = () => {
           <div className="portfolio-container">
 
             <div className="section-heading">
-
               <span>03</span>
-
-              <h2>
-                Experience
-              </h2>
-
+              <h2>Experience</h2>
             </div>
 
             <div className="timeline">
 
               {portfolio.experience.map(
                 (experience, index) => (
-                  <article
-                    className="timeline-item"
+                  <div
                     key={index}
+                    className="timeline-item"
                   >
 
-                    <div className="timeline-marker"></div>
+                    <span className="timeline-marker" />
 
                     <div className="timeline-content">
 
@@ -449,22 +530,33 @@ const PortfolioPreview = () => {
                             {experience.jobTitle}
                           </h3>
 
-                          <h4>
-                            {experience.company}
-                          </h4>
+                          {experience.company && (
+                            <h4>
+                              {experience.company}
+                            </h4>
+                          )}
 
                         </div>
 
-                        <span className="timeline-date">
+                        {(experience.startDate ||
+                          experience.endDate ||
+                          experience.current) && (
+                          <span className="timeline-date">
 
-                          {experience.startDate}
-                          {" — "}
+                            {experience.startDate || ""}
 
-                          {experience.current
-                            ? "Present"
-                            : experience.endDate}
+                            {experience.startDate &&
+                            (experience.endDate ||
+                              experience.current)
+                              ? " – "
+                              : ""}
 
-                        </span>
+                            {experience.current
+                              ? "Present"
+                              : experience.endDate || ""}
+
+                          </span>
+                        )}
 
                       </div>
 
@@ -482,7 +574,7 @@ const PortfolioPreview = () => {
 
                     </div>
 
-                  </article>
+                  </div>
                 )
               )}
 
@@ -493,9 +585,9 @@ const PortfolioPreview = () => {
         </section>
       )}
 
-      {/* ======================================
+      {/* ==========================================
           PROJECTS
-      ====================================== */}
+          ========================================== */}
 
       {portfolio.projects?.length > 0 && (
         <section
@@ -506,13 +598,8 @@ const PortfolioPreview = () => {
           <div className="portfolio-container">
 
             <div className="section-heading">
-
               <span>04</span>
-
-              <h2>
-                Projects
-              </h2>
-
+              <h2>Projects</h2>
             </div>
 
             <div className="projects-grid">
@@ -520,17 +607,17 @@ const PortfolioPreview = () => {
               {portfolio.projects.map(
                 (project, index) => (
                   <article
-                    className="project-card"
                     key={index}
+                    className="project-card"
                   >
 
-                    {project.imageUrl ? (
+                    {project.image ? (
                       <div className="project-image-wrapper">
 
                         <img
-                          src={project.imageUrl}
+                          src={project.image}
                           alt={
-                            project.name ||
+                            project.title ||
                             "Project"
                           }
                           className="project-image"
@@ -546,27 +633,26 @@ const PortfolioPreview = () => {
                     <div className="project-content">
 
                       <h3>
-                        {project.name}
+                        {project.title}
                       </h3>
 
-                      <p>
-                        {project.description}
-                      </p>
+                      {project.description && (
+                        <p>
+                          {project.description}
+                        </p>
+                      )}
 
-                      {project.technologies?.length > 0 && (
+                      {project.technologies?.length >
+                        0 && (
                         <div className="project-technologies">
 
                           {project.technologies.map(
-                            (
-                              technology,
-                              technologyIndex
-                            ) => (
-                              <span
-                                key={
-                                  technologyIndex
-                                }
-                              >
-                                {technology}
+                            (technology, techIndex) => (
+                              <span key={techIndex}>
+                                {typeof technology ===
+                                "string"
+                                  ? technology
+                                  : technology.name}
                               </span>
                             )
                           )}
@@ -574,33 +660,19 @@ const PortfolioPreview = () => {
                         </div>
                       )}
 
-                      <div className="project-links">
+                      {project.link && (
+                        <div className="project-links">
 
-                        {project.githubUrl && (
                           <a
-                            href={
-                              project.githubUrl
-                            }
+                            href={project.link}
                             target="_blank"
-                            rel="noreferrer"
+                            rel="noopener noreferrer"
                           >
-                            GitHub ↗
+                            View Project →
                           </a>
-                        )}
 
-                        {project.liveUrl && (
-                          <a
-                            href={
-                              project.liveUrl
-                            }
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            Live Demo ↗
-                          </a>
-                        )}
-
-                      </div>
+                        </div>
+                      )}
 
                     </div>
 
@@ -615,9 +687,9 @@ const PortfolioPreview = () => {
         </section>
       )}
 
-      {/* ======================================
+      {/* ==========================================
           EDUCATION
-      ====================================== */}
+          ========================================== */}
 
       {portfolio.education?.length > 0 && (
         <section
@@ -628,13 +700,8 @@ const PortfolioPreview = () => {
           <div className="portfolio-container">
 
             <div className="section-heading">
-
               <span>05</span>
-
-              <h2>
-                Education
-              </h2>
-
+              <h2>Education</h2>
             </div>
 
             <div className="education-grid">
@@ -642,23 +709,35 @@ const PortfolioPreview = () => {
               {portfolio.education.map(
                 (education, index) => (
                   <article
-                    className="education-card"
                     key={index}
+                    className="education-card"
                   >
 
-                    <span className="education-period">
-                      {education.startYear}
-                      {" — "}
-                      {education.endYear}
-                    </span>
+                    {(education.startYear ||
+                      education.endYear) && (
+                      <span className="education-period">
+
+                        {education.startYear || ""}
+
+                        {education.startYear &&
+                        education.endYear
+                          ? " – "
+                          : ""}
+
+                        {education.endYear || ""}
+
+                      </span>
+                    )}
 
                     <h3>
                       {education.degree}
                     </h3>
 
-                    <h4>
-                      {education.institution}
-                    </h4>
+                    {education.institution && (
+                      <h4>
+                        {education.institution}
+                      </h4>
+                    )}
 
                     {education.description && (
                       <p>
@@ -677,23 +756,21 @@ const PortfolioPreview = () => {
         </section>
       )}
 
-      {/* ======================================
+      {/* ==========================================
           CERTIFICATIONS
-      ====================================== */}
+          ========================================== */}
 
       {portfolio.certifications?.length > 0 && (
-        <section className="portfolio-section section-muted">
+        <section
+          id="certifications"
+          className="portfolio-section section-muted"
+        >
 
           <div className="portfolio-container">
 
             <div className="section-heading">
-
               <span>06</span>
-
-              <h2>
-                Certifications
-              </h2>
-
+              <h2>Certifications</h2>
             </div>
 
             <div className="certifications-grid">
@@ -701,8 +778,8 @@ const PortfolioPreview = () => {
               {portfolio.certifications.map(
                 (certification, index) => (
                   <article
-                    className="certification-card"
                     key={index}
+                    className="certification-card"
                   >
 
                     <div className="certification-icon">
@@ -715,21 +792,15 @@ const PortfolioPreview = () => {
                         {certification.name}
                       </h3>
 
-                      <h4>
-                        {certification.organization}
-                      </h4>
-
-                      {certification.issueDate && (
-                        <p>
-                          Issued{" "}
-                          {certification.issueDate}
-                        </p>
+                      {certification.issuer && (
+                        <h4>
+                          {certification.issuer}
+                        </h4>
                       )}
 
-                      {certification.credentialId && (
+                      {certification.date && (
                         <p>
-                          ID:{" "}
-                          {certification.credentialId}
+                          {certification.date}
                         </p>
                       )}
 
@@ -739,9 +810,9 @@ const PortfolioPreview = () => {
                             certification.credentialUrl
                           }
                           target="_blank"
-                          rel="noreferrer"
+                          rel="noopener noreferrer"
                         >
-                          View Credential ↗
+                          View Credential →
                         </a>
                       )}
 
@@ -758,98 +829,102 @@ const PortfolioPreview = () => {
         </section>
       )}
 
-      {/* ======================================
+      {/* ==========================================
           CONTACT
-      ====================================== */}
+          ========================================== */}
 
-      <section
-        id="contact"
-        className="contact-section"
-      >
+      {(contact.email ||
+        contact.phone ||
+        socialLinks.github ||
+        socialLinks.linkedin ||
+        socialLinks.twitter ||
+        socialLinks.instagram) && (
+        <section
+          id="contact"
+          className="contact-section"
+        >
 
-        <div className="portfolio-container contact-content">
+          <div className="portfolio-container contact-content">
 
-          <p className="contact-eyebrow">
-            07 — GET IN TOUCH
-          </p>
+            <p className="contact-eyebrow">
+              GET IN TOUCH
+            </p>
 
-          <h2>
-            Let's Connect
-          </h2>
+            <h2>Let's Connect</h2>
 
-          <p>
-            Have a project, opportunity, or
-            just want to say hello?
-            Feel free to reach out.
-          </p>
+            <p>
+              Feel free to reach out if you'd like
+              to connect or work together.
+            </p>
 
-          <div className="contact-links">
+            <div className="contact-links">
 
-            {contact.email && (
-              <a
-                href={`mailto:${contact.email}`}
-              >
-                Email
-              </a>
-            )}
+              {contact.email && (
+                <a
+                  href={`mailto:${contact.email}`}
+                >
+                  Email
+                </a>
+              )}
 
-            {contact.phone && (
-              <a
-                href={`tel:${contact.phone}`}
-              >
-                Phone
-              </a>
-            )}
+              {contact.phone && (
+                <a
+                  href={`tel:${contact.phone}`}
+                >
+                  Phone
+                </a>
+              )}
 
-            {socialLinks.github && (
-              <a
-                href={socialLinks.github}
-                target="_blank"
-                rel="noreferrer"
-              >
-                GitHub
-              </a>
-            )}
+              {socialLinks.github && (
+                <a
+                  href={socialLinks.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  GitHub
+                </a>
+              )}
 
-            {socialLinks.linkedin && (
-              <a
-                href={socialLinks.linkedin}
-                target="_blank"
-                rel="noreferrer"
-              >
-                LinkedIn
-              </a>
-            )}
+              {socialLinks.linkedin && (
+                <a
+                  href={socialLinks.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  LinkedIn
+                </a>
+              )}
 
-            {socialLinks.twitter && (
-              <a
-                href={socialLinks.twitter}
-                target="_blank"
-                rel="noreferrer"
-              >
-                X
-              </a>
-            )}
+              {socialLinks.twitter && (
+                <a
+                  href={socialLinks.twitter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Twitter
+                </a>
+              )}
 
-            {socialLinks.instagram && (
-              <a
-                href={socialLinks.instagram}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Instagram
-              </a>
-            )}
+              {socialLinks.instagram && (
+                <a
+                  href={socialLinks.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Instagram
+                </a>
+              )}
+
+            </div>
 
           </div>
 
-        </div>
+        </section>
+      )}
 
-      </section>
-
-      {/* ======================================
+      {/* ==========================================
           FOOTER
-      ====================================== */}
+          ========================================== */}
 
       <footer className="portfolio-footer">
 
@@ -857,12 +932,12 @@ const PortfolioPreview = () => {
 
           <p>
             © {new Date().getFullYear()}{" "}
-            {personal.name ||
-              "My Portfolio"}
+            {personal.name || "Your Name"}.
+            All rights reserved.
           </p>
 
           <p>
-            Built with Portfolio Creator
+            Created with Portfolio Creator
           </p>
 
         </div>

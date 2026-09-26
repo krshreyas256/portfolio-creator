@@ -826,3 +826,19 @@
     padding: 16px;
   }
 }
+
+.builder-dashboard-link {
+  border: none;
+  background: transparent;
+  padding: 0;
+
+  color: #111827;
+  font-size: 15px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.builder-dashboard-link:hover {
+  color: #4b5563;
+}

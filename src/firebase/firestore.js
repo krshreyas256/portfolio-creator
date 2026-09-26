@@ -140,12 +140,37 @@ export const isSlugAvailable = async (slug) => {
 export const publishPortfolio = async (portfolioId, slug) => {
   const portfolioRef = doc(db, "portfolios", portfolioId);
 
+  const portfolioSnapshot = await getDoc(portfolioRef);
+
+  if (!portfolioSnapshot.exists()) {
+    throw new Error("Portfolio not found.");
+  }
+
+  const currentPortfolio = portfolioSnapshot.data();
+
+  /*
+   * If already published, never change the existing slug.
+   */
+  if (currentPortfolio.published && currentPortfolio.slug) {
+    await updateDoc(portfolioRef, {
+      published: true,
+      updatedAt: serverTimestamp(),
+    });
+
+    return currentPortfolio.slug;
+  }
+
+  /*
+   * First-time publishing.
+   */
   await updateDoc(portfolioRef, {
     slug,
     published: true,
     publishedAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
+
+  return slug;
 };
 
 export const getPublishedPortfolio = async (slug) => {
