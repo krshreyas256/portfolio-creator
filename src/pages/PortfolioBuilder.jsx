@@ -12,6 +12,7 @@ import Skills from "../components/builder/Skills";
 import Education from "../components/builder/Education";
 import Experience from "../components/builder/Experience";
 import Projects from "../components/builder/Projects";  
+import Certifications from "../components/builder/Certifications";
 
 const PortfolioBuilder = () => {
   const { portfolioId } = useParams();
@@ -117,6 +118,17 @@ const PortfolioBuilder = () => {
     onBack={() => setStep(5)}
   />
 )}
+
+{step === 7 && (
+  <Certifications
+    portfolio={portfolio}
+    onSave={handleSave}
+    onNext={() => setStep(8)}
+    onBack={() => setStep(6)}
+  />
+)}
+
+
     </div>
   );
 };
