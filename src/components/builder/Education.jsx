@@ -16,28 +16,35 @@ const Education = ({ portfolio, onSave, onNext, onBack }) => {
   const [saving, setSaving] = useState(false);
 
   const addEducation = () => {
-    setEducation([...education, { ...emptyEducation }]);
+    setEducation((previous) => [
+      ...previous,
+      { ...emptyEducation },
+    ]);
   };
 
   const updateEducation = (index, field, value) => {
-    const updated = [...education];
+    setEducation((previous) => {
+      const updated = [...previous];
 
-    updated[index] = {
-      ...updated[index],
-      [field]: value,
-    };
+      updated[index] = {
+        ...updated[index],
+        [field]: value,
+      };
 
-    setEducation(updated);
+      return updated;
+    });
   };
 
   const removeEducation = (index) => {
-    setEducation(
-      education.filter((_, educationIndex) => educationIndex !== index)
+    setEducation((previous) =>
+      previous.filter(
+        (_, educationIndex) => educationIndex !== index
+      )
     );
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
     setSaving(true);
 
@@ -56,103 +63,236 @@ const Education = ({ portfolio, onSave, onNext, onBack }) => {
 
   return (
     <form onSubmit={handleSubmit}>
+
       <h2>Education</h2>
 
       <p>
-        Add your educational background.
+        Add your educational background, degrees, courses,
+        and academic achievements.
       </p>
 
-      {education.map((item, index) => (
-        <div key={index}>
-          <h3>Education {index + 1}</h3>
 
-          <input
-            type="text"
-            placeholder="Degree / Course"
-            value={item.degree}
-            onChange={(e) =>
-              updateEducation(index, "degree", e.target.value)
-            }
-            required
-          />
+      {/* Education entries */}
+      {education.length === 0 ? (
+        <div className="builder-empty-section">
+          <div className="builder-empty-icon">🎓</div>
 
-          <input
-            type="text"
-            placeholder="Institution"
-            value={item.institution}
-            onChange={(e) =>
-              updateEducation(
-                index,
-                "institution",
-                e.target.value
-              )
-            }
-            required
-          />
+          <h3>No education added yet</h3>
 
-          <input
-            type="text"
-            placeholder="Start Year"
-            value={item.startYear}
-            onChange={(e) =>
-              updateEducation(
-                index,
-                "startYear",
-                e.target.value
-              )
-            }
-          />
-
-          <input
-            type="text"
-            placeholder="End Year"
-            value={item.endYear}
-            onChange={(e) =>
-              updateEducation(
-                index,
-                "endYear",
-                e.target.value
-              )
-            }
-          />
-
-          <textarea
-            placeholder="Description (optional)"
-            value={item.description}
-            onChange={(e) =>
-              updateEducation(
-                index,
-                "description",
-                e.target.value
-              )
-            }
-          />
+          <p>
+            Add your degree, course, or other educational
+            qualifications.
+          </p>
 
           <button
             type="button"
-            onClick={() => removeEducation(index)}
+            onClick={addEducation}
           >
-            Remove
+            + Add Education
           </button>
         </div>
-      ))}
+      ) : (
+        <div className="builder-repeat-list">
 
-      <button
-        type="button"
-        onClick={addEducation}
-      >
-        + Add Education
-      </button>
+          {education.map((item, index) => (
 
-      <div>
-        <button type="button" onClick={onBack}>
-          Back
+            <div
+              className="builder-repeat-card"
+              key={index}
+            >
+
+              <div className="builder-repeat-header">
+
+                <div>
+                  <h3>
+                    Education {index + 1}
+                  </h3>
+
+                  <span>
+                    Academic qualification
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  className="builder-remove-button"
+                  onClick={() =>
+                    removeEducation(index)
+                  }
+                >
+                  Remove
+                </button>
+
+              </div>
+
+
+              {/* Degree */}
+              <div className="builder-field">
+
+                <label htmlFor={`degree-${index}`}>
+                  Degree / Course
+                </label>
+
+                <input
+                  id={`degree-${index}`}
+                  type="text"
+                  placeholder="e.g. Master of Computer Applications"
+                  value={item.degree}
+                  onChange={(event) =>
+                    updateEducation(
+                      index,
+                      "degree",
+                      event.target.value
+                    )
+                  }
+                  required
+                />
+
+              </div>
+
+
+              {/* Institution */}
+              <div className="builder-field">
+
+                <label htmlFor={`institution-${index}`}>
+                  Institution
+                </label>
+
+                <input
+                  id={`institution-${index}`}
+                  type="text"
+                  placeholder="e.g. RNS Institute of Technology"
+                  value={item.institution}
+                  onChange={(event) =>
+                    updateEducation(
+                      index,
+                      "institution",
+                      event.target.value
+                    )
+                  }
+                  required
+                />
+
+              </div>
+
+
+              {/* Years */}
+              <div className="builder-field-grid">
+
+                <div className="builder-field">
+
+                  <label htmlFor={`start-year-${index}`}>
+                    Start Year
+                  </label>
+
+                  <input
+                    id={`start-year-${index}`}
+                    type="text"
+                    placeholder="e.g. 2024"
+                    value={item.startYear}
+                    onChange={(event) =>
+                      updateEducation(
+                        index,
+                        "startYear",
+                        event.target.value
+                      )
+                    }
+                  />
+
+                </div>
+
+
+                <div className="builder-field">
+
+                  <label htmlFor={`end-year-${index}`}>
+                    End Year
+                  </label>
+
+                  <input
+                    id={`end-year-${index}`}
+                    type="text"
+                    placeholder="e.g. 2026"
+                    value={item.endYear}
+                    onChange={(event) =>
+                      updateEducation(
+                        index,
+                        "endYear",
+                        event.target.value
+                      )
+                    }
+                  />
+
+                </div>
+
+              </div>
+
+
+              {/* Description */}
+              <div className="builder-field">
+
+                <label htmlFor={`education-description-${index}`}>
+                  Description
+                  <span className="builder-optional">
+                    Optional
+                  </span>
+                </label>
+
+                <textarea
+                  id={`education-description-${index}`}
+                  placeholder="Add relevant details about your studies, achievements, coursework, etc."
+                  value={item.description}
+                  onChange={(event) =>
+                    updateEducation(
+                      index,
+                      "description",
+                      event.target.value
+                    )
+                  }
+                />
+
+              </div>
+
+            </div>
+
+          ))}
+
+        </div>
+      )}
+
+
+      {/* Add another education */}
+      {education.length > 0 && (
+        <button
+          type="button"
+          className="builder-add-button"
+          onClick={addEducation}
+        >
+          + Add Another Education
+        </button>
+      )}
+
+
+      {/* Navigation */}
+      <div className="builder-navigation">
+
+        <button
+          type="button"
+          onClick={onBack}
+        >
+          ← Back
         </button>
 
-        <button type="submit" disabled={saving}>
-          {saving ? "Saving..." : "Save & Continue"}
+        <button
+          type="submit"
+          disabled={saving}
+        >
+          {saving
+            ? "Saving..."
+            : "Save & Continue →"}
         </button>
+
       </div>
+
     </form>
   );
 };
