@@ -13,6 +13,7 @@ import Education from "../components/builder/Education";
 import Experience from "../components/builder/Experience";
 import Projects from "../components/builder/Projects";  
 import Certifications from "../components/builder/Certifications";
+import SocialContact from "../components/builder/SocialContact";
 
 const PortfolioBuilder = () => {
   const { portfolioId } = useParams();
@@ -128,6 +129,13 @@ const PortfolioBuilder = () => {
   />
 )}
 
+{step === 8 && (
+  <SocialContact
+    portfolio={portfolio}
+    onSave={handleSave}
+    onBack={() => setStep(7)}
+  />
+)}
 
     </div>
   );
