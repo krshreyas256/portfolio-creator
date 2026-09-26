@@ -1,74 +1,166 @@
 import { useState } from "react";
+import { uploadImage } from "../../cloudinary/uploadImage";
 
 const PersonalInfo = ({ portfolio, onSave, onNext }) => {
-  const [name, setName] = useState(portfolio.personal?.name || "");
-  const [title, setTitle] = useState(portfolio.personal?.title || "");
-  const [location, setLocation] = useState(
-    portfolio.personal?.location || ""
+  const [personal, setPersonal] = useState(
+    portfolio.personal || {
+      name: "",
+      title: "",
+      profileImage: "",
+      location: "",
+    }
   );
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
 
-    await onSave({
-      personal: {
-        ...portfolio.personal,
-        name,
-        title,
-        location,
-      },
-    });
+  const handleChange = (field, value) => {
+    setPersonal((previous) => ({
+      ...previous,
+      [field]: value,
+    }));
 
-    onNext();
+    setError("");
+  };
+
+  const handleImageUpload = async (file) => {
+    if (!file) return;
+
+    setError("");
+    setUploading(true);
+
+    try {
+      const imageUrl = await uploadImage(file);
+
+      setPersonal((previous) => ({
+        ...previous,
+        profileImage: imageUrl,
+      }));
+    } catch (error) {
+      console.error("Profile image upload error:", error);
+      setError("Unable to upload profile image. Please try again.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!personal.name.trim()) {
+      setError("Please enter your name.");
+      return;
+    }
+
+    if (!personal.title.trim()) {
+      setError("Please enter your professional title.");
+      return;
+    }
+
+    try {
+      setError("");
+
+      await onSave({
+        personal,
+      });
+
+      onNext();
+    } catch (error) {
+      console.error("Error saving personal information:", error);
+      setError("Unable to save your information. Please try again.");
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <div>
       <h2>Personal Information</h2>
 
       <p>
-        Tell us a little about yourself.
+        Tell visitors who you are and how they can identify you
+        professionally.
       </p>
 
-      <div>
-        <label>Full Name</label>
+      {error && <p>{error}</p>}
 
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. Shreyas Acharya"
-          required
-        />
-      </div>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Full Name</label>
 
-      <div>
-        <label>Professional Title</label>
+          <input
+            type="text"
+            value={personal.name}
+            onChange={(event) =>
+              handleChange("name", event.target.value)
+            }
+            placeholder="e.g. Shreyas Acharya"
+            required
+          />
+        </div>
 
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="e.g. Software Developer"
-          required
-        />
-      </div>
+        <div>
+          <label>Professional Title</label>
 
-      <div>
-        <label>Location</label>
+          <input
+            type="text"
+            value={personal.title}
+            onChange={(event) =>
+              handleChange("title", event.target.value)
+            }
+            placeholder="e.g. Software Developer"
+            required
+          />
+        </div>
 
-        <input
-          type="text"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          placeholder="e.g. Bengaluru, India"
-        />
-      </div>
+        <div>
+          <label>Location</label>
 
-      <button type="submit">
-        Save & Continue
-      </button>
-    </form>
+          <input
+            type="text"
+            value={personal.location}
+            onChange={(event) =>
+              handleChange("location", event.target.value)
+            }
+            placeholder="e.g. Bengaluru, India"
+          />
+        </div>
+
+        <div>
+          <label>Profile Picture</label>
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(event) =>
+              handleImageUpload(event.target.files[0])
+            }
+            disabled={uploading}
+          />
+
+          {uploading && <p>Uploading profile picture...</p>}
+
+          {personal.profileImage && (
+            <div>
+              <img
+                src={personal.profileImage}
+                alt="Profile preview"
+                width="180"
+                height="180"
+                style={{
+                  objectFit: "cover",
+                  borderRadius: "50%",
+                }}
+              />
+            </div>
+          )}
+        </div>
+
+        <div>
+          <button type="submit" disabled={uploading}>
+            {uploading ? "Uploading..." : "Save & Continue"}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 };
 
