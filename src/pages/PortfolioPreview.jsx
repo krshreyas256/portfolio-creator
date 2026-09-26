@@ -27,114 +27,125 @@ const PortfolioPreview = () => {
   }, [portfolioId]);
 
   if (loading) {
-    return <p>Loading portfolio...</p>;
+    return (
+      <div className="preview-loading">
+        <p>Loading portfolio...</p>
+      </div>
+    );
   }
 
   if (!portfolio) {
-    return <p>Portfolio not found.</p>;
+    return (
+      <div className="preview-loading">
+        <p>Portfolio not found.</p>
+      </div>
+    );
   }
+
+  const personal = portfolio.personal || {};
+  const socialLinks = portfolio.socialLinks || {};
+  const contact = portfolio.contact || {};
 
   return (
     <div className="portfolio-preview">
-      {/* Navigation */}
+      {/* ================= HEADER ================= */}
+
       <header className="portfolio-header">
-        <div className="portfolio-container">
+        <div className="portfolio-container header-content">
           <a href="#home" className="portfolio-logo">
-            {portfolio.personal?.name || "My Portfolio"}
+            {personal.name || "My Portfolio"}
           </a>
 
-          <nav>
+          <nav className="portfolio-nav">
             <a href="#about">About</a>
             <a href="#skills">Skills</a>
             <a href="#experience">Experience</a>
             <a href="#projects">Projects</a>
+            <a href="#education">Education</a>
             <a href="#contact">Contact</a>
           </nav>
         </div>
       </header>
 
-      {/* Hero */}
+      {/* ================= HERO ================= */}
+
       <section id="home" className="portfolio-hero">
         <div className="portfolio-container hero-content">
           <div className="hero-text">
-            <p className="hero-intro">Hello, I'm</p>
+            <p className="hero-greeting">Hello, I'm</p>
 
-            <h1>
-              {portfolio.personal?.name || "Your Name"}
-            </h1>
+            <h1>{personal.name || "Your Name"}</h1>
 
             <h2>
-              {portfolio.personal?.title || "Your Professional Title"}
+              {personal.title || "Your Professional Title"}
             </h2>
 
-            {portfolio.personal?.location && (
+            {personal.location && (
               <p className="hero-location">
-                📍 {portfolio.personal.location}
+                📍 {personal.location}
               </p>
             )}
+
+            <div className="hero-actions">
+              <a href="#projects" className="primary-button">
+                View Projects
+              </a>
+
+              <a href="#contact" className="secondary-button">
+                Contact Me
+              </a>
+            </div>
           </div>
 
-          {portfolio.personal?.profileImage && (
-            <div className="hero-image">
+          {personal.profileImage ? (
+            <div className="hero-image-wrapper">
               <img
-                src={portfolio.personal.profileImage}
-                alt={portfolio.personal.name}
+                src={personal.profileImage}
+                alt={personal.name || "Profile"}
+                className="hero-image"
               />
+            </div>
+          ) : (
+            <div className="hero-image-placeholder">
+              <span>
+                {(personal.name || "Y").charAt(0).toUpperCase()}
+              </span>
             </div>
           )}
         </div>
       </section>
 
-      {/* About */}
+      {/* ================= ABOUT ================= */}
+
       {portfolio.about && (
         <section id="about" className="portfolio-section">
           <div className="portfolio-container">
-            <h2>About Me</h2>
+            <div className="section-heading">
+              <span>01</span>
+              <h2>About Me</h2>
+            </div>
 
-            <p className="about-text">
-              {portfolio.about}
-            </p>
-          </div>
-        </section>
-      )}
-
-      {/* Skills */}
-      {portfolio.skills?.length > 0 && (
-        <section id="skills" className="portfolio-section">
-          <div className="portfolio-container">
-            <h2>Skills</h2>
-
-            <div className="skills-list">
-              {portfolio.skills.map((skill, index) => (
-                <span key={index} className="skill-tag">
-                  {skill}
-                </span>
-              ))}
+            <div className="about-content">
+              <p>{portfolio.about}</p>
             </div>
           </div>
         </section>
       )}
 
-      {/* Education */}
-      {portfolio.education?.length > 0 && (
-        <section className="portfolio-section">
+      {/* ================= SKILLS ================= */}
+
+      {portfolio.skills?.length > 0 && (
+        <section id="skills" className="portfolio-section section-muted">
           <div className="portfolio-container">
-            <h2>Education</h2>
+            <div className="section-heading">
+              <span>02</span>
+              <h2>Skills</h2>
+            </div>
 
-            <div className="timeline">
-              {portfolio.education.map((education, index) => (
-                <div className="timeline-item" key={index}>
-                  <h3>{education.degree}</h3>
-
-                  <h4>{education.institution}</h4>
-
-                  <p className="timeline-date">
-                    {education.startYear} - {education.endYear}
-                  </p>
-
-                  {education.description && (
-                    <p>{education.description}</p>
-                  )}
+            <div className="skills-grid">
+              {portfolio.skills.map((skill, index) => (
+                <div className="skill-card" key={index}>
+                  <span>{skill}</span>
                 </div>
               ))}
             </div>
@@ -142,54 +153,79 @@ const PortfolioPreview = () => {
         </section>
       )}
 
-      {/* Experience */}
+      {/* ================= EXPERIENCE ================= */}
+
       {portfolio.experience?.length > 0 && (
         <section id="experience" className="portfolio-section">
           <div className="portfolio-container">
-            <h2>Experience</h2>
+            <div className="section-heading">
+              <span>03</span>
+              <h2>Experience</h2>
+            </div>
 
             <div className="timeline">
               {portfolio.experience.map((experience, index) => (
-                <div className="timeline-item" key={index}>
-                  <h3>{experience.jobTitle}</h3>
+                <article className="timeline-item" key={index}>
+                  <div className="timeline-marker"></div>
 
-                  <h4>{experience.company}</h4>
+                  <div className="timeline-content">
+                    <div className="timeline-top">
+                      <div>
+                        <h3>{experience.jobTitle}</h3>
 
-                  {experience.location && (
-                    <p>{experience.location}</p>
-                  )}
+                        <h4>{experience.company}</h4>
+                      </div>
 
-                  <p className="timeline-date">
-                    {experience.startDate} -{" "}
-                    {experience.current
-                      ? "Present"
-                      : experience.endDate}
-                  </p>
+                      <span className="timeline-date">
+                        {experience.startDate} —{" "}
+                        {experience.current
+                          ? "Present"
+                          : experience.endDate}
+                      </span>
+                    </div>
 
-                  {experience.description && (
-                    <p>{experience.description}</p>
-                  )}
-                </div>
+                    {experience.location && (
+                      <p className="timeline-location">
+                        📍 {experience.location}
+                      </p>
+                    )}
+
+                    {experience.description && (
+                      <p>{experience.description}</p>
+                    )}
+                  </div>
+                </article>
               ))}
             </div>
           </div>
         </section>
       )}
 
-      {/* Projects */}
+      {/* ================= PROJECTS ================= */}
+
       {portfolio.projects?.length > 0 && (
-        <section id="projects" className="portfolio-section">
+        <section id="projects" className="portfolio-section section-muted">
           <div className="portfolio-container">
-            <h2>Projects</h2>
+            <div className="section-heading">
+              <span>04</span>
+              <h2>Projects</h2>
+            </div>
 
             <div className="projects-grid">
               {portfolio.projects.map((project, index) => (
                 <article className="project-card" key={index}>
-                  {project.imageUrl && (
-                    <img
-                      src={project.imageUrl}
-                      alt={project.name}
-                    />
+                  {project.imageUrl ? (
+                    <div className="project-image-wrapper">
+                      <img
+                        src={project.imageUrl}
+                        alt={project.name || "Project"}
+                        className="project-image"
+                      />
+                    </div>
+                  ) : (
+                    <div className="project-image-placeholder">
+                      Project
+                    </div>
                   )}
 
                   <div className="project-content">
@@ -216,7 +252,7 @@ const PortfolioPreview = () => {
                           target="_blank"
                           rel="noreferrer"
                         >
-                          GitHub
+                          GitHub ↗
                         </a>
                       )}
 
@@ -226,7 +262,7 @@ const PortfolioPreview = () => {
                           target="_blank"
                           rel="noreferrer"
                         >
-                          Live Demo
+                          Live Demo ↗
                         </a>
                       )}
                     </div>
@@ -238,11 +274,46 @@ const PortfolioPreview = () => {
         </section>
       )}
 
-      {/* Certifications */}
-      {portfolio.certifications?.length > 0 && (
-        <section className="portfolio-section">
+      {/* ================= EDUCATION ================= */}
+
+      {portfolio.education?.length > 0 && (
+        <section id="education" className="portfolio-section">
           <div className="portfolio-container">
-            <h2>Certifications</h2>
+            <div className="section-heading">
+              <span>05</span>
+              <h2>Education</h2>
+            </div>
+
+            <div className="education-grid">
+              {portfolio.education.map((education, index) => (
+                <article className="education-card" key={index}>
+                  <span className="education-period">
+                    {education.startYear} — {education.endYear}
+                  </span>
+
+                  <h3>{education.degree}</h3>
+
+                  <h4>{education.institution}</h4>
+
+                  {education.description && (
+                    <p>{education.description}</p>
+                  )}
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ================= CERTIFICATIONS ================= */}
+
+      {portfolio.certifications?.length > 0 && (
+        <section className="portfolio-section section-muted">
+          <div className="portfolio-container">
+            <div className="section-heading">
+              <span>06</span>
+              <h2>Certifications</h2>
+            </div>
 
             <div className="certifications-grid">
               {portfolio.certifications.map(
@@ -251,32 +322,39 @@ const PortfolioPreview = () => {
                     className="certification-card"
                     key={index}
                   >
-                    <h3>{certification.name}</h3>
+                    <div className="certification-icon">
+                      ✓
+                    </div>
 
-                    <h4>{certification.organization}</h4>
+                    <div>
+                      <h3>{certification.name}</h3>
 
-                    {certification.issueDate && (
-                      <p>
-                        Issued: {certification.issueDate}
-                      </p>
-                    )}
+                      <h4>
+                        {certification.organization}
+                      </h4>
 
-                    {certification.credentialId && (
-                      <p>
-                        Credential ID:{" "}
-                        {certification.credentialId}
-                      </p>
-                    )}
+                      {certification.issueDate && (
+                        <p>
+                          Issued {certification.issueDate}
+                        </p>
+                      )}
 
-                    {certification.credentialUrl && (
-                      <a
-                        href={certification.credentialUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        View Credential
-                      </a>
-                    )}
+                      {certification.credentialId && (
+                        <p>
+                          ID: {certification.credentialId}
+                        </p>
+                      )}
+
+                      {certification.credentialUrl && (
+                        <a
+                          href={certification.credentialUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          View Credential ↗
+                        </a>
+                      )}
+                    </div>
                   </article>
                 )
               )}
@@ -285,27 +363,35 @@ const PortfolioPreview = () => {
         </section>
       )}
 
-      {/* Contact */}
-      <section id="contact" className="portfolio-section contact-section">
-        <div className="portfolio-container">
+      {/* ================= CONTACT ================= */}
+
+      <section id="contact" className="contact-section">
+        <div className="portfolio-container contact-content">
+          <p className="contact-eyebrow">07 — GET IN TOUCH</p>
+
           <h2>Let's Connect</h2>
 
+          <p>
+            Have a project, opportunity, or just want to say hello?
+            Feel free to reach out.
+          </p>
+
           <div className="contact-links">
-            {portfolio.contact?.email && (
-              <a href={`mailto:${portfolio.contact.email}`}>
+            {contact.email && (
+              <a href={`mailto:${contact.email}`}>
                 Email
               </a>
             )}
 
-            {portfolio.contact?.phone && (
-              <a href={`tel:${portfolio.contact.phone}`}>
+            {contact.phone && (
+              <a href={`tel:${contact.phone}`}>
                 Phone
               </a>
             )}
 
-            {portfolio.socialLinks?.github && (
+            {socialLinks.github && (
               <a
-                href={portfolio.socialLinks.github}
+                href={socialLinks.github}
                 target="_blank"
                 rel="noreferrer"
               >
@@ -313,9 +399,9 @@ const PortfolioPreview = () => {
               </a>
             )}
 
-            {portfolio.socialLinks?.linkedin && (
+            {socialLinks.linkedin && (
               <a
-                href={portfolio.socialLinks.linkedin}
+                href={socialLinks.linkedin}
                 target="_blank"
                 rel="noreferrer"
               >
@@ -323,9 +409,9 @@ const PortfolioPreview = () => {
               </a>
             )}
 
-            {portfolio.socialLinks?.twitter && (
+            {socialLinks.twitter && (
               <a
-                href={portfolio.socialLinks.twitter}
+                href={socialLinks.twitter}
                 target="_blank"
                 rel="noreferrer"
               >
@@ -333,9 +419,9 @@ const PortfolioPreview = () => {
               </a>
             )}
 
-            {portfolio.socialLinks?.instagram && (
+            {socialLinks.instagram && (
               <a
-                href={portfolio.socialLinks.instagram}
+                href={socialLinks.instagram}
                 target="_blank"
                 rel="noreferrer"
               >
@@ -346,12 +432,17 @@ const PortfolioPreview = () => {
         </div>
       </section>
 
-      {/* Footer */}
+      {/* ================= FOOTER ================= */}
+
       <footer className="portfolio-footer">
-        <p>
-          © {new Date().getFullYear()}{" "}
-          {portfolio.personal?.name || "My Portfolio"}
-        </p>
+        <div className="portfolio-container">
+          <p>
+            © {new Date().getFullYear()}{" "}
+            {personal.name || "My Portfolio"}
+          </p>
+
+          <p>Built with Portfolio Creator</p>
+        </div>
       </footer>
     </div>
   );
