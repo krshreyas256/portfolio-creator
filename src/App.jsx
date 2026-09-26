@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import CreatePortfolio from "./pages/CreatePortfolio";
 import PortfolioBuilder from "./pages/PortfolioBuilder";
+import PortfolioPreview from "./pages/PortfolioPreview";
 
 function App() {
   return (
@@ -43,6 +44,15 @@ function App() {
   element={
     <ProtectedRoute>
       <PortfolioBuilder />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/preview/:portfolioId"
+  element={
+    <ProtectedRoute>
+      <PortfolioPreview />
     </ProtectedRoute>
   }
 />
