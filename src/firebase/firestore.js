@@ -7,11 +7,18 @@ import {
   collection,
   addDoc,
   updateDoc,
+  query,
+  where,
+  getDocs,
 } from "firebase/firestore";
 
 import app from "./config";
 
 const db = getFirestore(app);
+
+// ==========================================
+// USER PROFILE
+// ==========================================
 
 export const createUserProfile = async (user, name) => {
   const userRef = doc(db, "users", user.uid);
@@ -34,6 +41,10 @@ export const getUserProfile = async (uid) => {
 
   return null;
 };
+
+// ==========================================
+// PORTFOLIO
+// ==========================================
 
 export const createPortfolio = async (userId) => {
   const portfolioRef = await addDoc(collection(db, "portfolios"), {
@@ -77,6 +88,7 @@ export const createPortfolio = async (userId) => {
     },
 
     createdAt: serverTimestamp(),
+
     updatedAt: serverTimestamp(),
   });
 
@@ -106,5 +118,77 @@ export const updatePortfolio = async (portfolioId, data) => {
     updatedAt: serverTimestamp(),
   });
 };
+
+// ==========================================
+// PORTFOLIO PUBLISHING
+// ==========================================
+
+export const isSlugAvailable = async (slug) => {
+  const portfoliosRef = collection(db, "portfolios");
+
+  const slugQuery = query(
+    portfoliosRef,
+    where("slug", "==", slug),
+    where("published", "==", true)
+  );
+
+  const snapshot = await getDocs(slugQuery);
+
+  return snapshot.empty;
+};
+
+export const publishPortfolio = async (portfolioId, slug) => {
+  const portfolioRef = doc(db, "portfolios", portfolioId);
+
+  await updateDoc(portfolioRef, {
+    slug,
+    published: true,
+    publishedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+};
+
+export const getPublishedPortfolio = async (slug) => {
+  const portfoliosRef = collection(db, "portfolios");
+
+  const slugQuery = query(
+    portfoliosRef,
+    where("slug", "==", slug),
+    where("published", "==", true)
+  );
+
+  const snapshot = await getDocs(slugQuery);
+
+  if (snapshot.empty) {
+    return null;
+  }
+
+  const portfolioDocument = snapshot.docs[0];
+
+  return {
+    id: portfolioDocument.id,
+    ...portfolioDocument.data(),
+  };
+};
+
+export const getUserPortfolios = async (userId) => {
+  const portfoliosRef = collection(db, "portfolios");
+
+  const portfolioQuery = query(
+    portfoliosRef,
+    where("userId", "==", userId)
+  );
+
+  const snapshot = await getDocs(portfolioQuery);
+
+  return snapshot.docs.map((document) => ({
+    id: document.id,
+    ...document.data(),
+  }));
+};
+
+// ==========================================
+// FIRESTORE DATABASE
+// ==========================================
 
 export { db };

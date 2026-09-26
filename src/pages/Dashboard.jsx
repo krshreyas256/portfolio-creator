@@ -2,91 +2,202 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
-import { logoutUser } from "../firebase/auth";
-import { getUserProfile } from "../firebase/firestore";
+import {
+  getUserPortfolios,
+  createPortfolio,
+} from "../firebase/firestore";
 
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [profile, setProfile] = useState(null);
+  const [portfolios, setPortfolios] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    const loadProfile = async () => {
-      if (!user) return;
+  const loadPortfolios = async () => {
+    if (!user) return;
 
-      try {
-        const data = await getUserProfile(user.uid);
-        setProfile(data);
-      } catch (error) {
-        console.error("Error loading profile:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadProfile();
-  }, [user]);
-
-  const handleLogout = async () => {
     try {
-      await logoutUser();
-      navigate("/login");
+      setLoading(true);
+      setError("");
+
+      const data = await getUserPortfolios(user.uid);
+
+      // Show newest portfolios first
+      data.sort((a, b) => {
+        const dateA = a.createdAt?.seconds || 0;
+        const dateB = b.createdAt?.seconds || 0;
+
+        return dateB - dateA;
+      });
+
+      setPortfolios(data);
     } catch (error) {
-      console.error("Logout error:", error);
+      console.error("Error loading portfolios:", error);
+      setError("Unable to load your portfolios.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCreatePortfolio = () => {
-    navigate("/create");
+  useEffect(() => {
+    loadPortfolios();
+  }, [user]);
+
+  const handleCreatePortfolio = async () => {
+    if (!user) return;
+
+    try {
+      setCreating(true);
+      setError("");
+
+      const portfolioId = await createPortfolio(user.uid);
+
+      navigate(`/create/${portfolioId}`);
+    } catch (error) {
+      console.error("Error creating portfolio:", error);
+      setError("Unable to create portfolio. Please try again.");
+      setCreating(false);
+    }
+  };
+
+  const handleCopyUrl = async (slug) => {
+    const url = `${window.location.origin}/p/${slug}`;
+
+    try {
+      await navigator.clipboard.writeText(url);
+      alert("Portfolio URL copied!");
+    } catch (error) {
+      console.error("Copy error:", error);
+      alert(url);
+    }
   };
 
   if (loading) {
-    return <p>Loading dashboard...</p>;
+    return (
+      <div>
+        <h1>My Portfolios</h1>
+        <p>Loading your portfolios...</p>
+      </div>
+    );
   }
 
   return (
     <div>
-
       <header>
-        <h1>Portfolio Creator</h1>
+        <h1>My Portfolios</h1>
 
-        <button onClick={handleLogout}>
-          Logout
+        <p>
+          Create, edit and manage your professional portfolios.
+        </p>
+
+        <button
+          type="button"
+          onClick={handleCreatePortfolio}
+          disabled={creating}
+        >
+          {creating ? "Creating..." : "+ Create Portfolio"}
         </button>
       </header>
 
-      <main>
+      {error && <p>{error}</p>}
 
+      {portfolios.length === 0 ? (
         <section>
-          <h2>
-            Welcome, {profile?.name || "User"} 👋
-          </h2>
+          <h2>No portfolios yet</h2>
 
           <p>
-            Create and share your professional portfolio.
+            Create your first portfolio and start building your
+            professional online presence.
           </p>
-        </section>
 
+          <button
+            type="button"
+            onClick={handleCreatePortfolio}
+            disabled={creating}
+          >
+            {creating ? "Creating..." : "Create Your First Portfolio"}
+          </button>
+        </section>
+      ) : (
         <section>
-          <h2>Your Portfolio</h2>
+          {portfolios.map((portfolio) => (
+            <article key={portfolio.id}>
+              <div>
+                <h2>
+                  {portfolio.personal?.name || "Untitled Portfolio"}
+                </h2>
 
-          <div>
-            <h3>Create your portfolio</h3>
+                <p>
+                  {portfolio.personal?.title ||
+                    "Professional Portfolio"}
+                </p>
+              </div>
 
-            <p>
-              Build a professional portfolio and publish it online.
-            </p>
+              <div>
+                {portfolio.published ? (
+                  <span>🟢 Published</span>
+                ) : (
+                  <span>🟡 Draft</span>
+                )}
+              </div>
 
-            <button onClick={handleCreatePortfolio}>
-              + Create Portfolio
-            </button>
-          </div>
+              {portfolio.published && portfolio.slug && (
+                <p>
+                  {window.location.origin}/p/{portfolio.slug}
+                </p>
+              )}
+
+              <div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate(`/create/${portfolio.id}`)
+                  }
+                >
+                  Edit
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    navigate(`/preview/${portfolio.id}`)
+                  }
+                >
+                  Preview
+                </button>
+
+                {portfolio.published && portfolio.slug && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        window.open(
+                          `/p/${portfolio.slug}`,
+                          "_blank"
+                        )
+                      }
+                    >
+                      View Live
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleCopyUrl(portfolio.slug)
+                      }
+                    >
+                      Copy URL
+                    </button>
+                  </>
+                )}
+              </div>
+            </article>
+          ))}
         </section>
-
-      </main>
-
+      )}
     </div>
   );
 };

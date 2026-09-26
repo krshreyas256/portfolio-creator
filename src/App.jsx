@@ -9,6 +9,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import CreatePortfolio from "./pages/CreatePortfolio";
 import PortfolioBuilder from "./pages/PortfolioBuilder";
 import PortfolioPreview from "./pages/PortfolioPreview";
+import PublicPortfolio from "./pages/PublicPortfolio";
 
 function App() {
   return (
@@ -55,6 +56,11 @@ function App() {
       <PortfolioPreview />
     </ProtectedRoute>
   }
+/>
+
+<Route
+  path="/p/:slug"
+  element={<PublicPortfolio />}
 />
 
       </Routes>
