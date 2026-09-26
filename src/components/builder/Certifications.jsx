@@ -1,186 +1,345 @@
 import { useState } from "react";
 
-const Certifications = ({ portfolio, onSave, onNext, onBack }) => {
+const emptyCertification = {
+  name: "",
+  organization: "",
+  issueDate: "",
+  credentialId: "",
+  credentialUrl: "",
+};
+
+const Certifications = ({
+  portfolio,
+  onSave,
+  onNext,
+  onBack,
+}) => {
   const [certifications, setCertifications] = useState(
     portfolio.certifications || []
   );
 
-  const [error, setError] = useState("");
-
-  const handleChange = (index, field, value) => {
-    const updatedCertifications = [...certifications];
-
-    updatedCertifications[index][field] = value;
-
-    setCertifications(updatedCertifications);
-  };
+  const [saving, setSaving] = useState(false);
 
   const addCertification = () => {
-    setCertifications([
-      ...certifications,
-      {
-        name: "",
-        organization: "",
-        issueDate: "",
-        credentialId: "",
-        credentialUrl: "",
-      },
+    setCertifications((previous) => [
+      ...previous,
+      { ...emptyCertification },
     ]);
   };
 
-  const removeCertification = (index) => {
-    const updatedCertifications = certifications.filter(
-      (_, certificationIndex) => certificationIndex !== index
-    );
+  const updateCertification = (
+    index,
+    field,
+    value
+  ) => {
+    setCertifications((previous) => {
+      const updated = [...previous];
 
-    setCertifications(updatedCertifications);
+      updated[index] = {
+        ...updated[index],
+        [field]: value,
+      };
+
+      return updated;
+    });
+  };
+
+  const removeCertification = (index) => {
+    setCertifications((previous) =>
+      previous.filter(
+        (_, certificationIndex) =>
+          certificationIndex !== index
+      )
+    );
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    try {
-      setError("");
+    setSaving(true);
 
+    try {
       await onSave({
         certifications,
       });
 
       onNext();
     } catch (error) {
-      console.error("Error saving certifications:", error);
-      setError("Unable to save certifications. Please try again.");
+      console.error(
+        "Error saving certifications:",
+        error
+      );
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
-    <div>
+    <form onSubmit={handleSubmit}>
+
       <h2>Certifications</h2>
 
       <p>
-        Add certifications, courses, and other professional credentials
-        you have completed.
+        Add certifications, courses, and professional
+        credentials that strengthen your portfolio.
       </p>
 
-      {error && <p>{error}</p>}
 
-      <form onSubmit={handleSubmit}>
-        {certifications.length === 0 && (
-          <p>No certifications added yet.</p>
-        )}
+      {/* Empty state */}
 
-        {certifications.map((certification, index) => (
-          <div key={index}>
-            <h3>Certification {index + 1}</h3>
+      {certifications.length === 0 ? (
 
-            <div>
-              <label>Certification Name</label>
+        <div className="builder-empty-section">
 
-              <input
-                type="text"
-                value={certification.name}
-                onChange={(event) =>
-                  handleChange(index, "name", event.target.value)
-                }
-                placeholder="e.g. Machine Learning Foundation"
-                required
-              />
-            </div>
-
-            <div>
-              <label>Issuing Organization</label>
-
-              <input
-                type="text"
-                value={certification.organization}
-                onChange={(event) =>
-                  handleChange(
-                    index,
-                    "organization",
-                    event.target.value
-                  )
-                }
-                placeholder="e.g. Infosys Springboard"
-                required
-              />
-            </div>
-
-            <div>
-              <label>Issue Date</label>
-
-              <input
-                type="month"
-                value={certification.issueDate}
-                onChange={(event) =>
-                  handleChange(
-                    index,
-                    "issueDate",
-                    event.target.value
-                  )
-                }
-              />
-            </div>
-
-            <div>
-              <label>Credential ID</label>
-
-              <input
-                type="text"
-                value={certification.credentialId}
-                onChange={(event) =>
-                  handleChange(
-                    index,
-                    "credentialId",
-                    event.target.value
-                  )
-                }
-                placeholder="Optional"
-              />
-            </div>
-
-            <div>
-              <label>Credential URL</label>
-
-              <input
-                type="url"
-                value={certification.credentialUrl}
-                onChange={(event) =>
-                  handleChange(
-                    index,
-                    "credentialUrl",
-                    event.target.value
-                  )
-                }
-                placeholder="https://..."
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={() => removeCertification(index)}
-            >
-              Remove Certification
-            </button>
-
-            <hr />
+          <div className="builder-empty-icon">
+            🏆
           </div>
-        ))}
 
-        <button type="button" onClick={addCertification}>
-          + Add Certification
+          <h3>No certifications added yet</h3>
+
+          <p>
+            Add your professional certifications,
+            courses, or credentials.
+          </p>
+
+          <button
+            type="button"
+            onClick={addCertification}
+          >
+            + Add Certification
+          </button>
+
+        </div>
+
+      ) : (
+
+        <div className="builder-repeat-list">
+
+          {certifications.map(
+            (certification, index) => (
+
+              <div
+                className="builder-repeat-card"
+                key={index}
+              >
+
+                {/* Header */}
+
+                <div className="builder-repeat-header">
+
+                  <div>
+
+                    <h3>
+                      Certification {index + 1}
+                    </h3>
+
+                    <span>
+                      Professional credential
+                    </span>
+
+                  </div>
+
+                  <button
+                    type="button"
+                    className="builder-remove-button"
+                    onClick={() =>
+                      removeCertification(index)
+                    }
+                  >
+                    Remove
+                  </button>
+
+                </div>
+
+
+                {/* Certification name */}
+
+                <div className="builder-field">
+
+                  <label
+                    htmlFor={`certification-name-${index}`}
+                  >
+                    Certification Name
+                  </label>
+
+                  <input
+                    id={`certification-name-${index}`}
+                    type="text"
+                    placeholder="e.g. Machine Learning Foundation"
+                    value={certification.name}
+                    onChange={(event) =>
+                      updateCertification(
+                        index,
+                        "name",
+                        event.target.value
+                      )
+                    }
+                    required
+                  />
+
+                </div>
+
+
+                {/* Organization */}
+
+                <div className="builder-field">
+
+                  <label
+                    htmlFor={`certification-org-${index}`}
+                  >
+                    Issuing Organization
+                  </label>
+
+                  <input
+                    id={`certification-org-${index}`}
+                    type="text"
+                    placeholder="e.g. Infosys Springboard"
+                    value={certification.organization}
+                    onChange={(event) =>
+                      updateCertification(
+                        index,
+                        "organization",
+                        event.target.value
+                      )
+                    }
+                    required
+                  />
+
+                </div>
+
+
+                {/* Issue date */}
+
+                <div className="builder-field">
+
+                  <label
+                    htmlFor={`issue-date-${index}`}
+                  >
+                    Issue Date
+                  </label>
+
+                  <input
+                    id={`issue-date-${index}`}
+                    type="text"
+                    placeholder="e.g. August 2026"
+                    value={certification.issueDate}
+                    onChange={(event) =>
+                      updateCertification(
+                        index,
+                        "issueDate",
+                        event.target.value
+                      )
+                    }
+                  />
+
+                </div>
+
+
+                {/* Credential ID */}
+
+                <div className="builder-field">
+
+                  <label
+                    htmlFor={`credential-id-${index}`}
+                  >
+                    Credential ID
+                    <span className="builder-optional">
+                      Optional
+                    </span>
+                  </label>
+
+                  <input
+                    id={`credential-id-${index}`}
+                    type="text"
+                    placeholder="e.g. ABC123456"
+                    value={certification.credentialId}
+                    onChange={(event) =>
+                      updateCertification(
+                        index,
+                        "credentialId",
+                        event.target.value
+                      )
+                    }
+                  />
+
+                </div>
+
+
+                {/* Credential URL */}
+
+                <div className="builder-field">
+
+                  <label
+                    htmlFor={`credential-url-${index}`}
+                  >
+                    Credential URL
+                    <span className="builder-optional">
+                      Optional
+                    </span>
+                  </label>
+
+                  <input
+                    id={`credential-url-${index}`}
+                    type="url"
+                    placeholder="https://..."
+                    value={certification.credentialUrl}
+                    onChange={(event) =>
+                      updateCertification(
+                        index,
+                        "credentialUrl",
+                        event.target.value
+                      )
+                    }
+                  />
+
+                </div>
+
+              </div>
+
+            )
+          )}
+
+        </div>
+
+      )}
+
+
+      {/* Add another */}
+
+      {certifications.length > 0 && (
+        <button
+          type="button"
+          className="builder-add-button"
+          onClick={addCertification}
+        >
+          + Add Another Certification
+        </button>
+      )}
+
+
+      {/* Navigation */}
+
+      <div className="builder-navigation">
+
+        <button
+          type="button"
+          onClick={onBack}
+        >
+          ← Back
         </button>
 
-        <div>
-          <button type="button" onClick={onBack}>
-            Back
-          </button>
+        <button
+          type="submit"
+          disabled={saving}
+        >
+          {saving
+            ? "Saving..."
+            : "Save & Continue →"}
+        </button>
 
-          <button type="submit">
-            Save & Continue
-          </button>
-        </div>
-      </form>
-    </div>
+      </div>
+
+    </form>
   );
 };
 
