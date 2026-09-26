@@ -668,3 +668,37 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* ========================================
+   Builder Checkbox
+======================================== */
+
+.builder-checkbox {
+  display: flex !important;
+  align-items: center;
+
+  width: fit-content !important;
+
+  margin: 0 !important;
+
+  color: #374151 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+
+  cursor: pointer;
+}
+
+.builder-checkbox input {
+  width: 16px !important;
+  height: 16px;
+
+  margin: 0 8px 0 0;
+
+  accent-color: #111827;
+
+  cursor: pointer;
+}
+
+.builder-checkbox span {
+  line-height: 1.4;
+}

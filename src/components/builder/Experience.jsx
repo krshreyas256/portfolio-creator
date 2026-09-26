@@ -10,7 +10,12 @@ const emptyExperience = {
   description: "",
 };
 
-const Experience = ({ portfolio, onSave, onNext, onBack }) => {
+const Experience = ({
+  portfolio,
+  onSave,
+  onNext,
+  onBack,
+}) => {
   const [experience, setExperience] = useState(
     portfolio.experience || []
   );
@@ -18,33 +23,52 @@ const Experience = ({ portfolio, onSave, onNext, onBack }) => {
   const [saving, setSaving] = useState(false);
 
   const addExperience = () => {
-    setExperience([
-      ...experience,
+    setExperience((previous) => [
+      ...previous,
       { ...emptyExperience },
     ]);
   };
 
   const updateExperience = (index, field, value) => {
-    const updated = [...experience];
+    setExperience((previous) => {
+      const updated = [...previous];
 
-    updated[index] = {
-      ...updated[index],
-      [field]: value,
-    };
+      updated[index] = {
+        ...updated[index],
+        [field]: value,
+      };
 
-    setExperience(updated);
+      return updated;
+    });
   };
 
   const removeExperience = (index) => {
-    setExperience(
-      experience.filter(
-        (_, experienceIndex) => experienceIndex !== index
+    setExperience((previous) =>
+      previous.filter(
+        (_, experienceIndex) =>
+          experienceIndex !== index
       )
     );
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleCurrentChange = (index, checked) => {
+    setExperience((previous) => {
+      const updated = [...previous];
+
+      updated[index] = {
+        ...updated[index],
+        current: checked,
+        endDate: checked
+          ? ""
+          : updated[index].endDate,
+      };
+
+      return updated;
+    });
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
     setSaving(true);
 
@@ -55,7 +79,10 @@ const Experience = ({ portfolio, onSave, onNext, onBack }) => {
 
       onNext();
     } catch (error) {
-      console.error("Error saving experience:", error);
+      console.error(
+        "Error saving experience:",
+        error
+      );
     } finally {
       setSaving(false);
     }
@@ -63,143 +90,317 @@ const Experience = ({ portfolio, onSave, onNext, onBack }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2>Work Experience</h2>
+
+      <h2>Experience</h2>
 
       <p>
-        Add your professional experience.
+        Add your professional experience, internships,
+        freelance work, or other relevant roles.
       </p>
 
-      {experience.map((item, index) => (
-        <div key={index}>
-          <h3>Experience {index + 1}</h3>
 
-          <input
-            type="text"
-            placeholder="Job Title"
-            value={item.jobTitle}
-            onChange={(e) =>
-              updateExperience(
-                index,
-                "jobTitle",
-                e.target.value
-              )
-            }
-            required
-          />
+      {/* Experience entries */}
 
-          <input
-            type="text"
-            placeholder="Company"
-            value={item.company}
-            onChange={(e) =>
-              updateExperience(
-                index,
-                "company",
-                e.target.value
-              )
-            }
-            required
-          />
+      {experience.length === 0 ? (
 
-          <input
-            type="text"
-            placeholder="Location"
-            value={item.location}
-            onChange={(e) =>
-              updateExperience(
-                index,
-                "location",
-                e.target.value
-              )
-            }
-          />
+        <div className="builder-empty-section">
 
-          <label>
-            Start Date
-          </label>
+          <div className="builder-empty-icon">
+            💼
+          </div>
 
-          <input
-            type="month"
-            value={item.startDate}
-            onChange={(e) =>
-              updateExperience(
-                index,
-                "startDate",
-                e.target.value
-              )
-            }
-          />
+          <h3>No experience added yet</h3>
 
-          <label>
-            End Date
-          </label>
-
-          <input
-            type="month"
-            value={item.endDate}
-            onChange={(e) =>
-              updateExperience(
-                index,
-                "endDate",
-                e.target.value
-              )
-            }
-            disabled={item.current}
-          />
-
-          <label>
-            <input
-              type="checkbox"
-              checked={item.current}
-              onChange={(e) =>
-                updateExperience(
-                  index,
-                  "current",
-                  e.target.checked
-                )
-              }
-            />
-
-            I currently work here
-          </label>
-
-          <textarea
-            placeholder="Describe your responsibilities and achievements..."
-            value={item.description}
-            onChange={(e) =>
-              updateExperience(
-                index,
-                "description",
-                e.target.value
-              )
-            }
-          />
+          <p>
+            Add your work experience, internship, or
+            professional role.
+          </p>
 
           <button
             type="button"
-            onClick={() => removeExperience(index)}
+            onClick={addExperience}
           >
-            Remove
+            + Add Experience
           </button>
+
         </div>
-      ))}
 
-      <button
-        type="button"
-        onClick={addExperience}
-      >
-        + Add Experience
-      </button>
+      ) : (
 
-      <div>
-        <button type="button" onClick={onBack}>
-          Back
+        <div className="builder-repeat-list">
+
+          {experience.map((item, index) => (
+
+            <div
+              className="builder-repeat-card"
+              key={index}
+            >
+
+              {/* Card header */}
+
+              <div className="builder-repeat-header">
+
+                <div>
+
+                  <h3>
+                    Experience {index + 1}
+                  </h3>
+
+                  <span>
+                    Professional experience
+                  </span>
+
+                </div>
+
+                <button
+                  type="button"
+                  className="builder-remove-button"
+                  onClick={() =>
+                    removeExperience(index)
+                  }
+                >
+                  Remove
+                </button>
+
+              </div>
+
+
+              {/* Job title */}
+
+              <div className="builder-field">
+
+                <label
+                  htmlFor={`job-title-${index}`}
+                >
+                  Job Title / Role
+                </label>
+
+                <input
+                  id={`job-title-${index}`}
+                  type="text"
+                  placeholder="e.g. Software Developer"
+                  value={item.jobTitle}
+                  onChange={(event) =>
+                    updateExperience(
+                      index,
+                      "jobTitle",
+                      event.target.value
+                    )
+                  }
+                  required
+                />
+
+              </div>
+
+
+              {/* Company */}
+
+              <div className="builder-field">
+
+                <label
+                  htmlFor={`company-${index}`}
+                >
+                  Company / Organization
+                </label>
+
+                <input
+                  id={`company-${index}`}
+                  type="text"
+                  placeholder="e.g. ABC Technologies"
+                  value={item.company}
+                  onChange={(event) =>
+                    updateExperience(
+                      index,
+                      "company",
+                      event.target.value
+                    )
+                  }
+                  required
+                />
+
+              </div>
+
+
+              {/* Location */}
+
+              <div className="builder-field">
+
+                <label
+                  htmlFor={`experience-location-${index}`}
+                >
+                  Location
+                  <span className="builder-optional">
+                    Optional
+                  </span>
+                </label>
+
+                <input
+                  id={`experience-location-${index}`}
+                  type="text"
+                  placeholder="e.g. Bengaluru, India"
+                  value={item.location}
+                  onChange={(event) =>
+                    updateExperience(
+                      index,
+                      "location",
+                      event.target.value
+                    )
+                  }
+                />
+
+              </div>
+
+
+              {/* Dates */}
+
+              <div className="builder-field-grid">
+
+                <div className="builder-field">
+
+                  <label
+                    htmlFor={`start-date-${index}`}
+                  >
+                    Start Date
+                  </label>
+
+                  <input
+                    id={`start-date-${index}`}
+                    type="text"
+                    placeholder="e.g. June 2025"
+                    value={item.startDate}
+                    onChange={(event) =>
+                      updateExperience(
+                        index,
+                        "startDate",
+                        event.target.value
+                      )
+                    }
+                  />
+
+                </div>
+
+
+                <div className="builder-field">
+
+                  <label
+                    htmlFor={`end-date-${index}`}
+                  >
+                    End Date
+                  </label>
+
+                  <input
+                    id={`end-date-${index}`}
+                    type="text"
+                    placeholder="e.g. August 2026"
+                    value={item.endDate}
+                    onChange={(event) =>
+                      updateExperience(
+                        index,
+                        "endDate",
+                        event.target.value
+                      )
+                    }
+                    disabled={item.current}
+                  />
+
+                </div>
+
+              </div>
+
+
+              {/* Current position */}
+
+              <label className="builder-checkbox">
+
+                <input
+                  type="checkbox"
+                  checked={item.current || false}
+                  onChange={(event) =>
+                    handleCurrentChange(
+                      index,
+                      event.target.checked
+                    )
+                  }
+                />
+
+                <span>
+                  I currently work here
+                </span>
+
+              </label>
+
+
+              {/* Description */}
+
+              <div className="builder-field">
+
+                <label
+                  htmlFor={`experience-description-${index}`}
+                >
+                  Description
+                  <span className="builder-optional">
+                    Optional
+                  </span>
+                </label>
+
+                <textarea
+                  id={`experience-description-${index}`}
+                  placeholder="Describe your responsibilities, achievements, projects, or contributions."
+                  value={item.description}
+                  onChange={(event) =>
+                    updateExperience(
+                      index,
+                      "description",
+                      event.target.value
+                    )
+                  }
+                />
+
+              </div>
+
+            </div>
+
+          ))}
+
+        </div>
+      )}
+
+
+      {/* Add another */}
+
+      {experience.length > 0 && (
+        <button
+          type="button"
+          className="builder-add-button"
+          onClick={addExperience}
+        >
+          + Add Another Experience
+        </button>
+      )}
+
+
+      {/* Navigation */}
+
+      <div className="builder-navigation">
+
+        <button
+          type="button"
+          onClick={onBack}
+        >
+          ← Back
         </button>
 
-        <button type="submit" disabled={saving}>
-          {saving ? "Saving..." : "Save & Continue"}
+        <button
+          type="submit"
+          disabled={saving}
+        >
+          {saving
+            ? "Saving..."
+            : "Save & Continue →"}
         </button>
+
       </div>
+
     </form>
   );
 };
