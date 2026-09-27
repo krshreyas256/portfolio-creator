@@ -22,6 +22,7 @@ const PortfolioPreview = () => {
   const [publishing, setPublishing] = useState(false);
   const [publishedUrl, setPublishedUrl] = useState("");
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   /*
    * ==========================================
@@ -91,6 +92,7 @@ const PortfolioPreview = () => {
     if (!portfolio) return;
 
     setError("");
+    setSuccessMessage("");
 
     try {
       setPublishing(true);
@@ -118,6 +120,12 @@ const PortfolioPreview = () => {
         setPublishedUrl(
           `${window.location.origin}/p/${portfolio.slug}`
         );
+
+        setSuccessMessage("Changes published successfully!");
+
+        setTimeout(() => {
+          setSuccessMessage("");
+        }, 3000);
 
         return;
       }
@@ -173,6 +181,12 @@ const PortfolioPreview = () => {
       const url = `${window.location.origin}/p/${slug}`;
 
       setPublishedUrl(url);
+
+      setSuccessMessage("Portfolio published successfully!");
+
+      setTimeout(() => {
+        setSuccessMessage("");
+      }, 3000);
     } catch (err) {
       console.error("Publishing error:", err);
 
@@ -272,6 +286,14 @@ const PortfolioPreview = () => {
               {publishedUrl}
             </a>
 
+          </div>
+        )}
+
+        {/* Success */}
+
+        {successMessage && (
+          <div className="preview-success">
+            {successMessage}
           </div>
         )}
 

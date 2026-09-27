@@ -935,3 +935,14 @@
     font-size: 12px;
   }
 }
+
+.preview-success {
+  margin-top: 12px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: #e8f7ee;
+  color: #1f7a45;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
