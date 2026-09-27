@@ -10,7 +10,7 @@ const emptyCertification = {
 
 const Certifications = ({
   portfolio,
-  onSave,
+  onUpdate,
   onNext,
   onBack,
 }) => {
@@ -59,7 +59,7 @@ const Certifications = ({
     setSaving(true);
 
     try {
-      await onSave({
+      await onUpdate({
         certifications,
       });
 
@@ -76,7 +76,6 @@ const Certifications = ({
 
   return (
     <form onSubmit={handleSubmit}>
-
       <h2>Certifications</h2>
 
       <p>
@@ -84,13 +83,10 @@ const Certifications = ({
         credentials that strengthen your portfolio.
       </p>
 
-
       {/* Empty state */}
 
       {certifications.length === 0 ? (
-
         <div className="builder-empty-section">
-
           <div className="builder-empty-icon">
             🏆
           </div>
@@ -108,27 +104,19 @@ const Certifications = ({
           >
             + Add Certification
           </button>
-
         </div>
-
       ) : (
-
         <div className="builder-repeat-list">
-
           {certifications.map(
             (certification, index) => (
-
               <div
                 className="builder-repeat-card"
                 key={index}
               >
-
                 {/* Header */}
 
                 <div className="builder-repeat-header">
-
                   <div>
-
                     <h3>
                       Certification {index + 1}
                     </h3>
@@ -136,7 +124,6 @@ const Certifications = ({
                     <span>
                       Professional credential
                     </span>
-
                   </div>
 
                   <button
@@ -148,14 +135,11 @@ const Certifications = ({
                   >
                     Remove
                   </button>
-
                 </div>
-
 
                 {/* Certification name */}
 
                 <div className="builder-field">
-
                   <label
                     htmlFor={`certification-name-${index}`}
                   >
@@ -176,14 +160,11 @@ const Certifications = ({
                     }
                     required
                   />
-
                 </div>
-
 
                 {/* Organization */}
 
                 <div className="builder-field">
-
                   <label
                     htmlFor={`certification-org-${index}`}
                   >
@@ -204,14 +185,11 @@ const Certifications = ({
                     }
                     required
                   />
-
                 </div>
-
 
                 {/* Issue date */}
 
                 <div className="builder-field">
-
                   <label
                     htmlFor={`issue-date-${index}`}
                   >
@@ -231,14 +209,11 @@ const Certifications = ({
                       )
                     }
                   />
-
                 </div>
-
 
                 {/* Credential ID */}
 
                 <div className="builder-field">
-
                   <label
                     htmlFor={`credential-id-${index}`}
                   >
@@ -261,14 +236,11 @@ const Certifications = ({
                       )
                     }
                   />
-
                 </div>
-
 
                 {/* Credential URL */}
 
                 <div className="builder-field">
-
                   <label
                     htmlFor={`credential-url-${index}`}
                   >
@@ -291,18 +263,12 @@ const Certifications = ({
                       )
                     }
                   />
-
                 </div>
-
               </div>
-
             )
           )}
-
         </div>
-
       )}
-
 
       {/* Add another */}
 
@@ -316,11 +282,9 @@ const Certifications = ({
         </button>
       )}
 
-
       {/* Navigation */}
 
       <div className="builder-navigation">
-
         <button
           type="button"
           onClick={onBack}
@@ -336,9 +300,7 @@ const Certifications = ({
             ? "Saving..."
             : "Save & Continue →"}
         </button>
-
       </div>
-
     </form>
   );
 };

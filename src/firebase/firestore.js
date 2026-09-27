@@ -7,6 +7,7 @@ import {
   collection,
   addDoc,
   updateDoc,
+  deleteDoc,
   query,
   where,
   getDocs,
@@ -210,6 +211,12 @@ export const getUserPortfolios = async (userId) => {
     id: document.id,
     ...document.data(),
   }));
+};
+
+export const deletePortfolio = async (portfolioId) => {
+  const portfolioRef = doc(db, "portfolios", portfolioId);
+
+  await deleteDoc(portfolioRef);
 };
 
 // ==========================================

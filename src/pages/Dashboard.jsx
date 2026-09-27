@@ -3,10 +3,10 @@ import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
 import { logoutUser } from "../firebase/auth";
-
 import {
   getUserPortfolios,
   createPortfolio,
+  deletePortfolio,
 } from "../firebase/firestore";
 
 import "../styles/dashboard.css";
@@ -18,6 +18,7 @@ const Dashboard = () => {
   const [portfolios, setPortfolios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const [error, setError] = useState("");
   const [copiedId, setCopiedId] = useState(null);
 
@@ -81,6 +82,30 @@ const Dashboard = () => {
       }, 2000);
     } catch (error) {
       console.error("Copy error:", error);
+    }
+  };
+
+  const handleDeletePortfolio = async (portfolioId) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this portfolio?\n\nThis action cannot be undone."
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setDeletingId(portfolioId);
+      setError("");
+
+      await deletePortfolio(portfolioId);
+
+      setPortfolios((previous) =>
+        previous.filter((portfolio) => portfolio.id !== portfolioId)
+      );
+    } catch (error) {
+      console.error("Error deleting portfolio:", error);
+      setError("Unable to delete the portfolio. Please try again.");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -336,6 +361,21 @@ const Dashboard = () => {
                       </button>
                     </>
                   )}
+
+
+                  {/* Delete */}
+                  <button
+                    type="button"
+                    className="portfolio-action delete"
+                    onClick={() =>
+                      handleDeletePortfolio(portfolio.id)
+                    }
+                    disabled={deletingId === portfolio.id}
+                  >
+                    {deletingId === portfolio.id
+                      ? "Deleting..."
+                      : "Delete"}
+                  </button>
 
                 </div>
 

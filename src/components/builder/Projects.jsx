@@ -12,7 +12,7 @@ const emptyProject = {
 
 const Projects = ({
   portfolio,
-  onSave,
+  onUpdate,
   onNext,
   onBack,
 }) => {
@@ -102,7 +102,7 @@ const Projects = ({
     setError("");
 
     try {
-      await onSave({
+      await onUpdate({
         projects,
       });
 
@@ -123,14 +123,12 @@ const Projects = ({
 
   return (
     <form onSubmit={handleSubmit}>
-
       <h2>Projects</h2>
 
       <p>
         Showcase the projects that best demonstrate your
         skills, experience, and achievements.
       </p>
-
 
       {/* Error */}
 
@@ -140,13 +138,10 @@ const Projects = ({
         </div>
       )}
 
-
       {/* Empty state */}
 
       {projects.length === 0 ? (
-
         <div className="builder-empty-section">
-
           <div className="builder-empty-icon">
             🚀
           </div>
@@ -164,26 +159,18 @@ const Projects = ({
           >
             + Add Project
           </button>
-
         </div>
-
       ) : (
-
         <div className="builder-repeat-list">
-
           {projects.map((project, index) => (
-
             <div
               className="builder-repeat-card"
               key={index}
             >
-
               {/* Header */}
 
               <div className="builder-repeat-header">
-
                 <div>
-
                   <h3>
                     Project {index + 1}
                   </h3>
@@ -191,7 +178,6 @@ const Projects = ({
                   <span>
                     Portfolio project
                   </span>
-
                 </div>
 
                 <button
@@ -203,14 +189,11 @@ const Projects = ({
                 >
                   Remove
                 </button>
-
               </div>
-
 
               {/* Project name */}
 
               <div className="builder-field">
-
                 <label
                   htmlFor={`project-name-${index}`}
                 >
@@ -231,14 +214,11 @@ const Projects = ({
                   }
                   required
                 />
-
               </div>
-
 
               {/* Description */}
 
               <div className="builder-field">
-
                 <label
                   htmlFor={`project-description-${index}`}
                 >
@@ -258,14 +238,11 @@ const Projects = ({
                   }
                   required
                 />
-
               </div>
-
 
               {/* Technologies */}
 
               <div className="builder-field">
-
                 <label
                   htmlFor={`project-technologies-${index}`}
                 >
@@ -288,16 +265,12 @@ const Projects = ({
                 <small className="builder-field-help">
                   Separate technologies with commas.
                 </small>
-
               </div>
-
 
               {/* Links */}
 
               <div className="builder-field-grid">
-
                 <div className="builder-field">
-
                   <label
                     htmlFor={`github-url-${index}`}
                   >
@@ -320,12 +293,9 @@ const Projects = ({
                       )
                     }
                   />
-
                 </div>
 
-
                 <div className="builder-field">
-
                   <label
                     htmlFor={`live-url-${index}`}
                   >
@@ -348,16 +318,12 @@ const Projects = ({
                       )
                     }
                   />
-
                 </div>
-
               </div>
-
 
               {/* Project image */}
 
               <div className="builder-field">
-
                 <label
                   htmlFor={`project-image-${index}`}
                 >
@@ -390,25 +356,17 @@ const Projects = ({
 
                 {project.imageUrl && (
                   <div className="builder-project-image-preview">
-
                     <img
                       src={project.imageUrl}
                       alt={`${project.name || "Project"} preview`}
                     />
-
                   </div>
                 )}
-
               </div>
-
             </div>
-
           ))}
-
         </div>
-
       )}
-
 
       {/* Add another */}
 
@@ -422,11 +380,9 @@ const Projects = ({
         </button>
       )}
 
-
       {/* Navigation */}
 
       <div className="builder-navigation">
-
         <button
           type="button"
           onClick={onBack}
@@ -444,9 +400,7 @@ const Projects = ({
             ? "Saving..."
             : "Save & Continue →"}
         </button>
-
       </div>
-
     </form>
   );
 };

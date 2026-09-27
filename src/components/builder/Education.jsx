@@ -8,7 +8,7 @@ const emptyEducation = {
   description: "",
 };
 
-const Education = ({ portfolio, onSave, onNext, onBack }) => {
+const Education = ({ portfolio, onUpdate, onNext, onBack }) => {
   const [education, setEducation] = useState(
     portfolio.education || []
   );
@@ -49,7 +49,7 @@ const Education = ({ portfolio, onSave, onNext, onBack }) => {
     setSaving(true);
 
     try {
-      await onSave({
+      await onUpdate({
         education,
       });
 
@@ -63,14 +63,12 @@ const Education = ({ portfolio, onSave, onNext, onBack }) => {
 
   return (
     <form onSubmit={handleSubmit}>
-
       <h2>Education</h2>
 
       <p>
         Add your educational background, degrees, courses,
         and academic achievements.
       </p>
-
 
       {/* Education entries */}
       {education.length === 0 ? (
@@ -93,16 +91,12 @@ const Education = ({ portfolio, onSave, onNext, onBack }) => {
         </div>
       ) : (
         <div className="builder-repeat-list">
-
           {education.map((item, index) => (
-
             <div
               className="builder-repeat-card"
               key={index}
             >
-
               <div className="builder-repeat-header">
-
                 <div>
                   <h3>
                     Education {index + 1}
@@ -122,13 +116,10 @@ const Education = ({ portfolio, onSave, onNext, onBack }) => {
                 >
                   Remove
                 </button>
-
               </div>
-
 
               {/* Degree */}
               <div className="builder-field">
-
                 <label htmlFor={`degree-${index}`}>
                   Degree / Course
                 </label>
@@ -147,13 +138,10 @@ const Education = ({ portfolio, onSave, onNext, onBack }) => {
                   }
                   required
                 />
-
               </div>
-
 
               {/* Institution */}
               <div className="builder-field">
-
                 <label htmlFor={`institution-${index}`}>
                   Institution
                 </label>
@@ -172,15 +160,11 @@ const Education = ({ portfolio, onSave, onNext, onBack }) => {
                   }
                   required
                 />
-
               </div>
-
 
               {/* Years */}
               <div className="builder-field-grid">
-
                 <div className="builder-field">
-
                   <label htmlFor={`start-year-${index}`}>
                     Start Year
                   </label>
@@ -198,12 +182,9 @@ const Education = ({ portfolio, onSave, onNext, onBack }) => {
                       )
                     }
                   />
-
                 </div>
 
-
                 <div className="builder-field">
-
                   <label htmlFor={`end-year-${index}`}>
                     End Year
                   </label>
@@ -221,16 +202,14 @@ const Education = ({ portfolio, onSave, onNext, onBack }) => {
                       )
                     }
                   />
-
                 </div>
-
               </div>
-
 
               {/* Description */}
               <div className="builder-field">
-
-                <label htmlFor={`education-description-${index}`}>
+                <label
+                  htmlFor={`education-description-${index}`}
+                >
                   Description
                   <span className="builder-optional">
                     Optional
@@ -249,16 +228,11 @@ const Education = ({ portfolio, onSave, onNext, onBack }) => {
                     )
                   }
                 />
-
               </div>
-
             </div>
-
           ))}
-
         </div>
       )}
-
 
       {/* Add another education */}
       {education.length > 0 && (
@@ -271,10 +245,8 @@ const Education = ({ portfolio, onSave, onNext, onBack }) => {
         </button>
       )}
 
-
       {/* Navigation */}
       <div className="builder-navigation">
-
         <button
           type="button"
           onClick={onBack}
@@ -290,9 +262,7 @@ const Education = ({ portfolio, onSave, onNext, onBack }) => {
             ? "Saving..."
             : "Save & Continue →"}
         </button>
-
       </div>
-
     </form>
   );
 };

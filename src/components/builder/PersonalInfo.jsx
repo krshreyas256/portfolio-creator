@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { uploadImage } from "../../cloudinary/uploadImage";
 
-const PersonalInfo = ({ portfolio, onSave, onNext }) => {
+const PersonalInfo = ({ portfolio, onUpdate, onNext }) => {
   const [personal, setPersonal] = useState(
     portfolio.personal || {
       name: "",
@@ -60,7 +60,7 @@ const PersonalInfo = ({ portfolio, onSave, onNext }) => {
     try {
       setError("");
 
-      await onSave({
+      await onUpdate({
         personal,
       });
 

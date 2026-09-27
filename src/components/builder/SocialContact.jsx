@@ -2,7 +2,7 @@ import { useState } from "react";
 
 const SocialContact = ({
   portfolio,
-  onSave,
+  onUpdate,
   onBack,
 }) => {
   const [socialLinks, setSocialLinks] = useState(
@@ -49,7 +49,7 @@ const SocialContact = ({
     setError("");
 
     try {
-      await onSave({
+      await onUpdate({
         socialLinks,
         contact,
       });
@@ -69,7 +69,6 @@ const SocialContact = ({
 
   return (
     <form onSubmit={handleSubmit}>
-
       <h2>Social & Contact</h2>
 
       <p>
@@ -83,11 +82,9 @@ const SocialContact = ({
         </div>
       )}
 
-
       {/* Contact Information */}
 
       <div className="builder-section-block">
-
         <div className="builder-section-heading">
           <div className="builder-section-icon">
             ✉️
@@ -102,9 +99,7 @@ const SocialContact = ({
           </div>
         </div>
 
-
         <div className="builder-field">
-
           <label htmlFor="contact-email">
             Email Address
           </label>
@@ -121,12 +116,9 @@ const SocialContact = ({
               )
             }
           />
-
         </div>
 
-
         <div className="builder-field">
-
           <label htmlFor="contact-phone">
             Phone Number
             <span className="builder-optional">
@@ -146,16 +138,12 @@ const SocialContact = ({
               )
             }
           />
-
         </div>
-
       </div>
-
 
       {/* Social Links */}
 
       <div className="builder-section-block">
-
         <div className="builder-section-heading">
           <div className="builder-section-icon">
             🔗
@@ -171,11 +159,9 @@ const SocialContact = ({
           </div>
         </div>
 
-
         {/* GitHub */}
 
         <div className="builder-field">
-
           <label htmlFor="github">
             GitHub
             <span className="builder-optional">
@@ -195,14 +181,11 @@ const SocialContact = ({
               )
             }
           />
-
         </div>
-
 
         {/* LinkedIn */}
 
         <div className="builder-field">
-
           <label htmlFor="linkedin">
             LinkedIn
             <span className="builder-optional">
@@ -222,14 +205,11 @@ const SocialContact = ({
               )
             }
           />
-
         </div>
-
 
         {/* Twitter */}
 
         <div className="builder-field">
-
           <label htmlFor="twitter">
             X / Twitter
             <span className="builder-optional">
@@ -249,14 +229,11 @@ const SocialContact = ({
               )
             }
           />
-
         </div>
-
 
         {/* Instagram */}
 
         <div className="builder-field">
-
           <label htmlFor="instagram">
             Instagram
             <span className="builder-optional">
@@ -276,16 +253,12 @@ const SocialContact = ({
               )
             }
           />
-
         </div>
-
       </div>
-
 
       {/* Navigation */}
 
       <div className="builder-navigation">
-
         <button
           type="button"
           onClick={onBack}
@@ -301,9 +274,7 @@ const SocialContact = ({
             ? "Saving..."
             : "Save Portfolio"}
         </button>
-
       </div>
-
     </form>
   );
 };

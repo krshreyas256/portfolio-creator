@@ -12,7 +12,7 @@ const emptyExperience = {
 
 const Experience = ({
   portfolio,
-  onSave,
+  onUpdate,
   onNext,
   onBack,
 }) => {
@@ -73,7 +73,7 @@ const Experience = ({
     setSaving(true);
 
     try {
-      await onSave({
+      await onUpdate({
         experience,
       });
 
@@ -90,7 +90,6 @@ const Experience = ({
 
   return (
     <form onSubmit={handleSubmit}>
-
       <h2>Experience</h2>
 
       <p>
@@ -98,13 +97,10 @@ const Experience = ({
         freelance work, or other relevant roles.
       </p>
 
-
       {/* Experience entries */}
 
       {experience.length === 0 ? (
-
         <div className="builder-empty-section">
-
           <div className="builder-empty-icon">
             💼
           </div>
@@ -122,26 +118,18 @@ const Experience = ({
           >
             + Add Experience
           </button>
-
         </div>
-
       ) : (
-
         <div className="builder-repeat-list">
-
           {experience.map((item, index) => (
-
             <div
               className="builder-repeat-card"
               key={index}
             >
-
               {/* Card header */}
 
               <div className="builder-repeat-header">
-
                 <div>
-
                   <h3>
                     Experience {index + 1}
                   </h3>
@@ -149,7 +137,6 @@ const Experience = ({
                   <span>
                     Professional experience
                   </span>
-
                 </div>
 
                 <button
@@ -161,14 +148,11 @@ const Experience = ({
                 >
                   Remove
                 </button>
-
               </div>
-
 
               {/* Job title */}
 
               <div className="builder-field">
-
                 <label
                   htmlFor={`job-title-${index}`}
                 >
@@ -189,14 +173,11 @@ const Experience = ({
                   }
                   required
                 />
-
               </div>
-
 
               {/* Company */}
 
               <div className="builder-field">
-
                 <label
                   htmlFor={`company-${index}`}
                 >
@@ -217,14 +198,11 @@ const Experience = ({
                   }
                   required
                 />
-
               </div>
-
 
               {/* Location */}
 
               <div className="builder-field">
-
                 <label
                   htmlFor={`experience-location-${index}`}
                 >
@@ -247,16 +225,12 @@ const Experience = ({
                     )
                   }
                 />
-
               </div>
-
 
               {/* Dates */}
 
               <div className="builder-field-grid">
-
                 <div className="builder-field">
-
                   <label
                     htmlFor={`start-date-${index}`}
                   >
@@ -276,12 +250,9 @@ const Experience = ({
                       )
                     }
                   />
-
                 </div>
 
-
                 <div className="builder-field">
-
                   <label
                     htmlFor={`end-date-${index}`}
                   >
@@ -302,16 +273,12 @@ const Experience = ({
                     }
                     disabled={item.current}
                   />
-
                 </div>
-
               </div>
-
 
               {/* Current position */}
 
               <label className="builder-checkbox">
-
                 <input
                   type="checkbox"
                   checked={item.current || false}
@@ -326,14 +293,11 @@ const Experience = ({
                 <span>
                   I currently work here
                 </span>
-
               </label>
-
 
               {/* Description */}
 
               <div className="builder-field">
-
                 <label
                   htmlFor={`experience-description-${index}`}
                 >
@@ -355,16 +319,11 @@ const Experience = ({
                     )
                   }
                 />
-
               </div>
-
             </div>
-
           ))}
-
         </div>
       )}
-
 
       {/* Add another */}
 
@@ -378,11 +337,9 @@ const Experience = ({
         </button>
       )}
 
-
       {/* Navigation */}
 
       <div className="builder-navigation">
-
         <button
           type="button"
           onClick={onBack}
@@ -398,9 +355,7 @@ const Experience = ({
             ? "Saving..."
             : "Save & Continue →"}
         </button>
-
       </div>
-
     </form>
   );
 };

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const Skills = ({ portfolio, onSave, onNext, onBack }) => {
+const Skills = ({ portfolio, onUpdate, onNext, onBack }) => {
   const [skills, setSkills] = useState(portfolio.skills || []);
   const [newSkill, setNewSkill] = useState("");
   const [saving, setSaving] = useState(false);
@@ -39,7 +39,7 @@ const Skills = ({ portfolio, onSave, onNext, onBack }) => {
     setSaving(true);
 
     try {
-      await onSave({
+      await onUpdate({
         skills,
       });
 

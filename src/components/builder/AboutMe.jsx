@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const AboutMe = ({ portfolio, onSave, onNext, onBack }) => {
+const AboutMe = ({ portfolio, onUpdate, onNext, onBack }) => {
   const [about, setAbout] = useState(portfolio.about || "");
   const [saving, setSaving] = useState(false);
 
@@ -10,7 +10,7 @@ const AboutMe = ({ portfolio, onSave, onNext, onBack }) => {
     setSaving(true);
 
     try {
-      await onSave({
+      await onUpdate({
         about,
       });
 
