@@ -15,7 +15,27 @@ const PublicPortfolio = () => {
     const loadPortfolio = async () => {
       try {
         const data = await getPublishedPortfolio(slug);
-        setPortfolio(data);
+
+        if (data) {
+          /*
+            The public portfolio must use only the
+            last published version.
+          */
+          if (data.publishedData) {
+            setPortfolio({
+              ...data,
+              ...data.publishedData,
+            });
+          } else {
+            /*
+              Backward compatibility for portfolios
+              published before publishedData was added.
+            */
+            setPortfolio(data);
+          }
+        } else {
+          setPortfolio(null);
+        }
       } catch (error) {
         console.error("Error loading public portfolio:", error);
       } finally {
@@ -77,14 +97,10 @@ const PublicPortfolio = () => {
 
             <h1>{personal.name || "Your Name"}</h1>
 
-            <h2>
-              {personal.title || "Your Professional Title"}
-            </h2>
+            <h2>{personal.title || "Your Professional Title"}</h2>
 
             {personal.location && (
-              <p className="hero-location">
-                📍 {personal.location}
-              </p>
+              <p className="hero-location">📍 {personal.location}</p>
             )}
 
             <div className="hero-actions">
@@ -318,9 +334,7 @@ const PublicPortfolio = () => {
                     className="certification-card"
                     key={index}
                   >
-                    <div className="certification-icon">
-                      ✓
-                    </div>
+                    <div className="certification-icon">✓</div>
 
                     <div>
                       <h3>{certification.name}</h3>
@@ -328,15 +342,11 @@ const PublicPortfolio = () => {
                       <h4>{certification.organization}</h4>
 
                       {certification.issueDate && (
-                        <p>
-                          Issued {certification.issueDate}
-                        </p>
+                        <p>Issued {certification.issueDate}</p>
                       )}
 
                       {certification.credentialId && (
-                        <p>
-                          ID: {certification.credentialId}
-                        </p>
+                        <p>ID: {certification.credentialId}</p>
                       )}
 
                       {certification.credentialUrl && (
@@ -361,9 +371,7 @@ const PublicPortfolio = () => {
 
       <section id="contact" className="contact-section">
         <div className="portfolio-container contact-content">
-          <p className="contact-eyebrow">
-            07 — GET IN TOUCH
-          </p>
+          <p className="contact-eyebrow">07 — GET IN TOUCH</p>
 
           <h2>Let's Connect</h2>
 
