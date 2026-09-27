@@ -1,0 +1,252 @@
+/* =========================================================
+   DASHBOARD HEADER
+========================================================= */
+
+.dashboard-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  background: rgba(8, 11, 22, 0.78);
+
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.dashboard-header-inner {
+  width: min(1180px, 92%);
+  margin: 0 auto;
+
+  min-height: 72px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+
+/* =========================================================
+   BRAND
+========================================================= */
+
+.dashboard-brand {
+  color: #ffffff;
+
+  text-decoration: none;
+
+  font-size: 21px;
+  font-weight: 800;
+
+  letter-spacing: -0.5px;
+
+  transition: opacity 0.2s ease;
+}
+
+.dashboard-brand:hover {
+  opacity: 0.85;
+}
+
+
+/* =========================================================
+   USER MENU
+========================================================= */
+
+.dashboard-user-menu {
+  position: relative;
+}
+
+
+/* =========================================================
+   USER BUTTON
+========================================================= */
+
+.dashboard-user-button {
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(148, 163, 184, 0.25);
+
+  border-radius: 9px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(139, 92, 246, 0.2),
+      rgba(59, 130, 246, 0.16)
+    );
+
+  color: #ffffff;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.dashboard-user-button:hover,
+.dashboard-user-button.active {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(139, 92, 246, 0.35),
+      rgba(59, 130, 246, 0.28)
+    );
+
+  border-color: rgba(167, 139, 250, 0.45);
+
+  transform: translateY(-1px);
+}
+
+
+/* =========================================================
+   DROPDOWN
+========================================================= */
+
+.dashboard-user-dropdown {
+  position: absolute;
+
+  top: calc(100% + 10px);
+  right: 0;
+
+  width: 250px;
+
+  padding: 10px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(25, 31, 50, 0.98),
+      rgba(15, 20, 35, 0.98)
+    );
+
+  border: 1px solid rgba(148, 163, 184, 0.18);
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.4),
+    0 0 30px rgba(99, 102, 241, 0.08);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  animation: dashboardDropdownIn 0.15s ease-out;
+}
+
+@keyframes dashboardDropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* =========================================================
+   EMAIL
+========================================================= */
+
+.dashboard-user-dropdown-email {
+  padding: 10px 10px 11px;
+
+  color: #cbd5e1;
+
+  font-size: 13px;
+  line-height: 1.5;
+
+  word-break: break-all;
+}
+
+
+/* =========================================================
+   DIVIDER
+========================================================= */
+
+.dashboard-user-dropdown-divider {
+  height: 1px;
+
+  margin: 2px 0 8px;
+
+  background: rgba(148, 163, 184, 0.12);
+}
+
+
+/* =========================================================
+   DROPDOWN LOGOUT
+========================================================= */
+
+.dashboard-dropdown-logout {
+  width: 100%;
+
+  border: 1px solid rgba(248, 113, 113, 0.14);
+
+  border-radius: 8px;
+
+  background: rgba(127, 29, 29, 0.08);
+
+  color: #fca5a5;
+
+  padding: 10px 12px;
+
+  text-align: left;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.dashboard-dropdown-logout:hover {
+  background: rgba(127, 29, 29, 0.18);
+
+  border-color: rgba(248, 113, 113, 0.28);
+
+  color: #fecaca;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 599px) {
+
+  .dashboard-header-inner {
+    min-height: 66px;
+  }
+
+  .dashboard-brand {
+    font-size: 18px;
+  }
+
+  .dashboard-user-button {
+    width: 38px;
+    height: 38px;
+  }
+
+  .dashboard-user-dropdown {
+    width: 230px;
+  }
+}

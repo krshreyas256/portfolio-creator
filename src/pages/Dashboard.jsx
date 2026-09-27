@@ -2,14 +2,18 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
-import { logoutUser } from "../firebase/auth";
+
 import {
   getUserPortfolios,
   createPortfolio,
   deletePortfolio,
 } from "../firebase/firestore";
 
+import DashboardHeader from "../components/layout/DashboardHeader";
+import Footer from "../components/layout/Footer";
+
 import "../styles/dashboard.css";
+import "../styles/footer.css";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -103,18 +107,10 @@ const Dashboard = () => {
       );
     } catch (error) {
       console.error("Error deleting portfolio:", error);
+
       setError("Unable to delete the portfolio. Please try again.");
     } finally {
       setDeletingId(null);
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await logoutUser();
-      navigate("/login");
-    } catch (error) {
-      console.error("Logout error:", error);
     }
   };
 
@@ -129,49 +125,27 @@ const Dashboard = () => {
   return (
     <div className="dashboard-page">
 
-      {/* Header */}
-      <header className="dashboard-header">
-        <div className="dashboard-header-inner">
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
 
-          <a
-            href="/dashboard"
-            className="dashboard-brand"
-          >
-            Portfolio Creator
-          </a>
-
-          <div className="dashboard-header-right">
-
-            <span className="dashboard-user-email">
-              {user?.email}
-            </span>
-
-            <button
-              type="button"
-              className="dashboard-logout"
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
-
-          </div>
-
-        </div>
-      </header>
+      <DashboardHeader />
 
 
-      {/* Main */}
+      {/* =====================================================
+          MAIN
+      ===================================================== */}
+
       <main className="dashboard-main">
 
-        {/* Heading */}
+        {/* Page Heading */}
         <div className="dashboard-title-row">
 
           <div className="dashboard-title">
             <h1>My Portfolios</h1>
 
             <p>
-              Create, edit and manage your professional
-              portfolios.
+              Create, edit and manage your professional portfolios.
             </p>
           </div>
 
@@ -197,7 +171,10 @@ const Dashboard = () => {
         )}
 
 
-        {/* Portfolios */}
+        {/* ===================================================
+            EMPTY STATE
+        =================================================== */}
+
         {portfolios.length === 0 ? (
 
           <section className="dashboard-empty">
@@ -228,6 +205,10 @@ const Dashboard = () => {
 
         ) : (
 
+          /* =================================================
+             PORTFOLIO GRID
+          ================================================= */
+
           <section className="portfolio-grid">
 
             {portfolios.map((portfolio) => (
@@ -237,7 +218,10 @@ const Dashboard = () => {
                 key={portfolio.id}
               >
 
-                {/* Card top */}
+                {/* =================================================
+                   CARD TOP
+                ================================================= */}
+
                 <div className="portfolio-card-top">
 
                   <div className="portfolio-card-info">
@@ -256,6 +240,7 @@ const Dashboard = () => {
 
 
                   {/* Status */}
+
                   {portfolio.published ? (
 
                     <span className="portfolio-status published">
@@ -273,7 +258,10 @@ const Dashboard = () => {
                 </div>
 
 
-                {/* URL */}
+                {/* =================================================
+                   PUBLIC URL / DRAFT MESSAGE
+                ================================================= */}
+
                 {portfolio.published &&
                 portfolio.slug ? (
 
@@ -299,38 +287,46 @@ const Dashboard = () => {
                 )}
 
 
-                {/* Actions */}
+                {/* =================================================
+                   ACTIONS
+                ================================================= */}
+
                 <div className="portfolio-actions">
+
+                  {/* Edit */}
 
                   <button
                     type="button"
                     className="portfolio-action primary"
                     onClick={() =>
-                      navigate(
-                        `/create/${portfolio.id}`
-                      )
+                      navigate(`/create/${portfolio.id}`)
                     }
                   >
                     Edit
                   </button>
 
 
+                  {/* Preview */}
+
                   <button
                     type="button"
                     className="portfolio-action"
                     onClick={() =>
-                      navigate(
-                        `/preview/${portfolio.id}`
-                      )
+                      navigate(`/preview/${portfolio.id}`)
                     }
                   >
                     Preview
                   </button>
 
 
+                  {/* Published-only actions */}
+
                   {portfolio.published &&
                   portfolio.slug && (
                     <>
+
+                      {/* View Live */}
+
                       <button
                         type="button"
                         className="portfolio-action live"
@@ -344,6 +340,8 @@ const Dashboard = () => {
                         View Live
                       </button>
 
+
+                      {/* Copy URL */}
 
                       <button
                         type="button"
@@ -359,18 +357,22 @@ const Dashboard = () => {
                           ? "Copied!"
                           : "Copy URL"}
                       </button>
+
                     </>
                   )}
 
 
                   {/* Delete */}
+
                   <button
                     type="button"
                     className="portfolio-action delete"
                     onClick={() =>
                       handleDeletePortfolio(portfolio.id)
                     }
-                    disabled={deletingId === portfolio.id}
+                    disabled={
+                      deletingId === portfolio.id
+                    }
                   >
                     {deletingId === portfolio.id
                       ? "Deleting..."
@@ -388,6 +390,13 @@ const Dashboard = () => {
         )}
 
       </main>
+
+
+      {/* =====================================================
+          FOOTER
+      ===================================================== */}
+
+      <Footer />
 
     </div>
   );
