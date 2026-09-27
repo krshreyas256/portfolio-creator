@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../firebase/auth";
 
+import "../styles/auth.css";
+
 const Login = () => {
   const navigate = useNavigate();
 
@@ -28,37 +30,90 @@ const Login = () => {
   };
 
   return (
-    <div>
-      <h1>Login</h1>
+    <div className="auth-page">
+      <div className="auth-container">
 
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+        <div className="auth-brand">
+          <Link to="/" className="auth-brand-name">
+            Portfolio Creator
+          </Link>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+          <p className="auth-brand-tagline">
+            Build. Publish. Share.
+          </p>
+        </div>
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </form>
+        <div className="auth-card">
 
-      {error && <p>{error}</p>}
+          <div className="auth-header">
+            <h1>Welcome back</h1>
+            <p>
+              Log in to continue building your portfolio.
+            </p>
+          </div>
 
-      <p>
-        Don't have an account?{" "}
-        <Link to="/signup">Create Account</Link>
-      </p>
+          <form className="auth-form" onSubmit={handleLogin}>
+
+            <div className="auth-field">
+              <label htmlFor="login-email">
+                Email
+              </label>
+
+              <input
+                id="login-email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+              />
+            </div>
+
+            <div className="auth-field">
+              <label htmlFor="login-password">
+                Password
+              </label>
+
+              <input
+                id="login-password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+              />
+            </div>
+
+            {error && (
+              <div className="auth-error">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="auth-submit"
+              disabled={loading}
+            >
+              {loading ? "Logging in..." : "Log in"}
+            </button>
+
+          </form>
+
+          <div className="auth-footer">
+            <p>
+              Don't have an account?{" "}
+              <Link to="/signup">
+                Create an account
+              </Link>
+            </p>
+          </div>
+
+        </div>
+
+      </div>
     </div>
   );
 };

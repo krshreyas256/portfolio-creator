@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { registerUser } from "../firebase/auth";
 import { createUserProfile } from "../firebase/firestore";
 
+import "../styles/auth.css";
+
 const Signup = () => {
   const navigate = useNavigate();
 
@@ -33,45 +35,106 @@ const Signup = () => {
   };
 
   return (
-    <div>
-      <h1>Create Account</h1>
+    <div className="auth-page">
+      <div className="auth-container">
 
-      <form onSubmit={handleSignup}>
-        <input
-          type="text"
-          placeholder="Full Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
+        <div className="auth-brand">
+          <Link to="/" className="auth-brand-name">
+            Portfolio Creator
+          </Link>
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+          <p className="auth-brand-tagline">
+            Build. Publish. Share.
+          </p>
+        </div>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+        <div className="auth-card">
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Creating Account..." : "Sign Up"}
-        </button>
-      </form>
+          <div className="auth-header">
+            <h1>Create your account</h1>
+            <p>
+              Start building your professional portfolio.
+            </p>
+          </div>
 
-      {error && <p>{error}</p>}
+          <form className="auth-form" onSubmit={handleSignup}>
 
-      <p>
-        Already have an account?{" "}
-        <Link to="/login">Login</Link>
-      </p>
+            <div className="auth-field">
+              <label htmlFor="signup-name">
+                Full Name
+              </label>
+
+              <input
+                id="signup-name"
+                type="text"
+                placeholder="Your full name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                autoComplete="name"
+              />
+            </div>
+
+            <div className="auth-field">
+              <label htmlFor="signup-email">
+                Email
+              </label>
+
+              <input
+                id="signup-email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+              />
+            </div>
+
+            <div className="auth-field">
+              <label htmlFor="signup-password">
+                Password
+              </label>
+
+              <input
+                id="signup-password"
+                type="password"
+                placeholder="Create a password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="new-password"
+              />
+            </div>
+
+            {error && (
+              <div className="auth-error">
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="auth-submit"
+              disabled={loading}
+            >
+              {loading ? "Creating account..." : "Create account"}
+            </button>
+
+          </form>
+
+          <div className="auth-footer">
+            <p>
+              Already have an account?{" "}
+              <Link to="/login">
+                Log in
+              </Link>
+            </p>
+          </div>
+
+        </div>
+
+      </div>
     </div>
   );
 };
